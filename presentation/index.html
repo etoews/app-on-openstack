@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Build an Application on an OpenStack Cloud</title>
+
+    <meta name="author" content="Everett Toews, Dana Bauer">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section id="welcome">
+          <h1>Build an Application</h1>
+          <h1>on an OpenStack Cloud</h1>
+          <center>
+            <table>
+              <tbody>
+                <tr>
+                  <td>Everett Toews</td>
+                  <td><a href="https://twitter.com/everett_toews" target="_blank">@everett_toews</a></td>
+                </tr>
+                <tr>
+                  <td>Dana Bauer</td>
+                  <td><a href="https://twitter.com/geography76" target="_blank">@geography76</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </center>
+        </section>
+
+        <section>
+          <h1>Agenda</h1>
+          <ol>
+            <li><a href="#/cloud">The Cloud</a></li>
+            <li><a href="#/openstack">OpenStack</a></li>
+            <li><a href="#/access">Access</a></li>
+            <li><a href="#/control">Cloud Control</a></li>
+            <li><a href="#/deployment">Deployment</a></li>
+            <li><a href="#/break">Break</a></li>
+          </ol>
+        </section>
+
+        <section>
+          <h1>Agenda</h1>
+          <ol>
+            <li><a href="#/application">Application</a></li>
+            <li><a href="#/architecture">Architecture</a></li>
+            <li><a href="#/workers">Workers</a></li>
+            <li><a href="#/db">Database</a></li>
+            <li><a href="#/api">API</a></li>
+            <li><a href="#/app">App</a></li>
+            <li><a href="#/run">Run</a></li>
+            <li><a href="#/deployment-revisit">Deployment Revisited?</a></li>
+          </ol>
+        </section>
+
+        <section id="cloud">
+          <h1>The Cloud</h1>
+          <p>Super short intro to the cloud. Skip it if everyone knows what IaaS is.</p>
+        </section>
+
+        <section id="openstack">
+          <h1>OpenStack</h1>
+          <p>Intro to OpenStack. Covers all services, how it all fits together, and where Rackspace fits in.</p>
+        </section>
+
+        <section id="access">
+          <h1>Access</h1>
+          <p>Access to Rackspace. Get everyone going with an account and make sure they can login.</p>
+        </section>
+
+        <section id="control">
+          <h1>Cloud Control</h1>
+          <p>Discuss all of the ways you can control the cloud. Demonstrate each. Hands-on for the attendees?</p>
+        </section>
+
+        <section id="deployment">
+          <h1>Deployment</h1>
+          <p>Discuss deployment options for apps. I think we'll go with deploying everything individually from the CLI to keep it educational.</p>
+        </section>
+
+        <section id="break">
+          <h1>Break</h1>
+        </section>
+
+        <section id="application">
+          <h1>The Application</h1>
+          <p>Describe the application.</p>
+        </section>
+
+        <section id="architecture">
+          <h1>The Architecture</h1>
+          <p><a href="https://docs.google.com/drawings/d/1NWW2MVz4jZqohHDXyhMIt9D7N6fLJp5WwHwfDOLcGFo/edit?usp=sharing">Describe the architecture</a>.</p>
+        </section>
+
+        <section id="workers">
+          <h1>Workers</h1>
+          <p>Code substitution at integration points. Deploy and configure the workers with Nova.</p>
+        </section>
+
+        <section id="database">
+          <h1>Database</h1>
+          <p>Deploy the database with Trove.</p>
+        </section>
+
+        <section id="api">
+          <h1>API</h1>
+          <p>Code substitution at integration points. Deploy the API tier with Nova.</p>
+        </section>
+
+        <section id="app">
+          <h1>App</h1>
+          <p>Code substitution at integration points. Deploy the App tier with Nova.</p>
+        </section>
+
+        <section id="run">
+          <h1>Run</h1>
+          <p>Run the app and use it.</p>
+        </section>
+
+        <section id="deployment-revisit">
+          <h1>Deployment Revisited</h1>
+          <p>Revisit deployment and show a Heat template for what we just deployed with the CLI.</p>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: false,
+        progress: false,
+        history: true,
+        center: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
