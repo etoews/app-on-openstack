@@ -274,8 +274,12 @@
         </section>
 
         <section>
+          <a href="#/devplus">developer+ Advice</a>
+        </section>
+
+        <section>
           <p><img src="img/stop.png"></p>
-          <a href="http://rum.wkx.io/user" target="_blank">Temp Account</a>
+          <a href="http://rum.phymata.com/user" target="_blank">Temp Account</a>
         </section>
 
         <section id="control">
@@ -303,7 +307,7 @@
         </section>
 
         <section>
-          <h1>TODO: Horizon screen shot</h1>
+          <img class="stretch" src="img/horizon.png">
         </section>
 
         <section>
@@ -312,25 +316,132 @@
         </section>
 
         <section>
-          <ol>
-            <li>Servers &gt; Cloud Servers</li>
-            <li>Create Server</li>
-          </ol>
+          <span style="white-space: nowrap;">
+            <ol>
+              <li>Servers &gt; Cloud Servers</li>
+              <li>Create Server</li>
+            </ol>
+          </span>
         </section>
 
         <section>
-          <ol>
-            <li>Server Name: dev-server</li>
-            <li>Region: IAD</li>
-            <li>Image: Linux &gt; Ubuntu &gt; 14.04 LTS</li>
-            <li>Flavor: 1 GB General Purpose v1</li>
-            <li>Create Server (copy the password)</li>
-          </ol>
+          <span style="white-space: nowrap;">
+            <ol>
+              <li>Server Name: dev-server</li>
+              <li>Region: IAD</li>
+              <li>Image: Linux &gt; Ubuntu &gt; 15.04</li>
+              <li>Flavor: 1 GB General Purpose v1</li>
+              <li>Create Server (copy the password)</li>
+            </ol>
+          </span>
+        </section>
+
+        <section>
+          <a href="http://everett-toews.github.io/rackspace-developer-doubleplusgood/presentation/#/secure">Security Advice</a>
+        </section>
+
+        <section>
+          <h2>Login &amp; Update</h2>
+          <pre><code data-trim class="bash">
+ssh root@my.dev-server.ipv4.address
+apt-get -y update; apt-get -y upgrade
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Setup Python</h2>
+          <pre><code data-trim class="bash">
+apt-get -y install python-dev python-pip libssl-dev libffi-dev
+pip install virtualenv virtualenvwrapper
+echo "export WORKON_HOME=$HOME/.virtualenvs" &gt;&gt; $HOME/.profile
+echo "source /usr/local/bin/virtualenvwrapper.sh" &gt;&gt; $HOME/.profile
+source .profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Install OpenStack Client</h2>
+          <pre><code data-trim class="bash">
+mkvirtualenv osc
+pip install python-openstackclient
+openstack --version
+openstack complete >> .osc.bash_completion
+echo "source $HOME/.osc.bash_completion" &gt;&gt; $HOME/.profile
+source .profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Configure Environment</h2>
+          <pre><code data-trim class="bash">
+cat &lt;&lt;EOF &gt;&gt; $HOME/.profile
+export OS_AUTH_URL=https://identity.api.rackspacecloud.com/v2.0/
+export OS_REGION_NAME=IAD
+export OS_USERNAME=my-username
+export OS_PROJECT_NAME=my-account-number
+export OS_PASSWORD=my-password
+EOF
+source .profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Run OpenStack Client</h2>
+          <pre><code data-trim class="bash">
+workon osc
+openstack image list
+openstack --debug server list
+openstack server list --format json
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>SSH Key</h2>
+          <pre><code data-trim class="bash">
+openstack keypair create qcon &gt; $HOME/.ssh/id_rsa.qcon
+chmod 400 $HOME/.ssh/id_rsa.qcon
+          </code></pre>
         </section>
 
         <section id="deployment">
           <h1>Deployment</h1>
-          <p>Discuss deployment options for apps. I think we'll go with deploying everything individually from the CLI to keep it educational.</p>
+        </section>
+
+        <section>
+          <h1>Orchestration</h1>
+          <h2>(Heat)</h2>
+        </section>
+
+        <section>
+          <h1>Salt</h1>
+        </section>
+
+        <section>
+          <h1>Ansible</h1>
+        </section>
+
+        <section>
+          <h1>Chef</h1>
+        </section>
+
+        <section>
+          <h1>Puppet</h1>
+        </section>
+
+        <section>
+          <h1>Docker</h1>
+        </section>
+
+        <section>
+          <h1>Kubernetes</h1>
+        </section>
+
+        <section>
+          <h1>CLI</h1>
+        </section>
+
+        <section>
+          <h1>and Ansible</h1>
         </section>
 
         <section id="break">
@@ -376,6 +487,60 @@
           <h1>Deployment Revisited</h1>
           <p>Revisit deployment and show a Heat template for what we just deployed with the CLI.</p>
         </section>
+
+        <section id="thanks">
+          <h1>Thanks!</h1>
+          <center>
+            <table>
+              <tbody>
+                <tr>
+                  <td>Everett Toews</td>
+                  <td><a href="https://twitter.com/everett_toews" target="_blank">@everett_toews</a></td>
+                </tr>
+                <tr>
+                  <td>Dana Bauer</td>
+                  <td><a href="https://twitter.com/geography76" target="_blank">@geography76</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </center>
+        </section>
+
+        <section id="devplus">
+          <h1>developer+ Advice</h1>
+        </section>
+
+        <section>
+          <h1>$50/month credit</h1>
+          <h1>for 12 months</h1>
+        </section>
+
+        <section>
+          <h1>Over $50/month</h1>
+          <h1>you get charged</h1>
+        </section>
+
+        <section>
+          <h1>Meter starts running</h1>
+          <h1>on resource creation</h1>
+        </section>
+
+        <section>
+          <h1>1 GB General Purpose</h1>
+          <h1>Server for 1 month</h1>
+          <h1>&lt; $25</h1>
+        </section>
+
+        <section>
+          <h2><a href="http://www.rackspace.com/calculator" target="_blank">rackspace.com/calculator</a></h2>
+          <h2>(ignore Service Level)</h2>
+        </section>
+
+        <section>
+          <h1>Delete unused</h1>
+          <h1>resources!</h1>
+        </section>
+
       </div>
     </div>
 
