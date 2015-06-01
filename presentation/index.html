@@ -351,13 +351,21 @@ apt-get -y install vim git jq
         </section>
 
         <section>
+          <ul>
+            <li>vim</li>
+            <li>git</li>
+            <li>jq</li>
+          </ul>
+        </section>
+
+        <section>
           <h2>Setup Python</h2>
           <pre><code data-trim class="bash">
 apt-get -y install python-dev python-pip libssl-dev libffi-dev
 pip install virtualenv virtualenvwrapper
 echo "export WORKON_HOME=$HOME/.virtualenvs" &gt;&gt; $HOME/.profile
 echo "source /usr/local/bin/virtualenvwrapper.sh" &gt;&gt; $HOME/.profile
-source .profile
+source $HOME/.profile
           </code></pre>
         </section>
 
@@ -369,7 +377,7 @@ pip install python-openstackclient
 openstack --version
 openstack complete >> .osc.bash_completion
 echo "source $HOME/.osc.bash_completion" &gt;&gt; $HOME/.profile
-source .profile
+source $HOME/.profile
           </code></pre>
         </section>
 
@@ -383,7 +391,7 @@ export OS_USERNAME=my-username
 export OS_PROJECT_NAME=my-account-number
 export OS_PASSWORD=my-password
 EOF
-source .profile
+source $HOME/.profile
           </code></pre>
         </section>
 
@@ -398,10 +406,10 @@ openstack server list --format json
         </section>
 
         <section>
-          <h2>SSH Key</h2>
+          <h2>SSH Key for Deploys</h2>
           <pre><code data-trim class="bash">
-openstack keypair create qcon &gt; $HOME/.ssh/id_rsa.qcon
-chmod 400 $HOME/.ssh/id_rsa.qcon
+openstack keypair create qcon &gt; $HOME/.ssh/id_rsa.qcon_deploy
+chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
           </code></pre>
         </section>
 
@@ -455,6 +463,34 @@ chmod 400 $HOME/.ssh/id_rsa.qcon
           <p>Describe the application.</p>
         </section>
 
+        <section>
+          <h2>SSH Key for GitHub</h2>
+          <p><a href="https://help.github.com/articles/generating-ssh-keys/#platform-linux" target="_blank">Generating SSH keys</a></p>
+          <ul>
+            <li>Step 2:</li>
+            <ul>
+              <li>File: $HOME/.ssh/id_rsa.qcon_github</li>
+              <li>Passphrase: &lt;empty&gt;</li>
+            </ul>
+            <li>Step 3:</li>
+            <ul>
+              <li><code data-trim class="bash">ssh-add $HOME/.ssh/id_rsa.qcon_github</code></li>
+            </ul>
+            <li>Step 4:</li>
+            <ul>
+              <li>Skip xclip</li>
+              <li><code data-trim class="bash">more $HOME/.ssh/id_rsa.qcon_github.pub</code></li>
+            </ul>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Fork 'n Clone</h2>
+          <pre><code data-trim class="bash">
+git clone git@github.com:everett-toews/app-on-openstack.git
+          </code></pre>
+        </section>
+
         <section id="architecture">
           <h1>The Architecture</h1>
           <p><a href="https://docs.google.com/drawings/d/1NWW2MVz4jZqohHDXyhMIt9D7N6fLJp5WwHwfDOLcGFo/edit?usp=sharing">Describe the architecture</a>.</p>
@@ -490,7 +526,7 @@ cat &lt;&lt;EOF &gt;&gt; $HOME/.profile
 export OS_TENANT_ID=$OS_PROJECT_NAME
 export TROVE_SERVICE_TYPE=rax:database
 EOF
-source .profile
+source $HOME/.profile
           </code></pre>
         </section>
 
@@ -501,13 +537,41 @@ workon osc
 trove flavor-list
 trove --debug list
 trove create --size 2 --databases watermark --users wmadmin:password --datastore MySQL watermark 2
-trove --json list 2>/dev/null
+trove list 2>/dev/null
+export WM_DB_HOSTNAME=$(trove --json list 2>/dev/null | jq -r .[0].hostname)
+echo $WM_DB_HOSTNAME
+echo "export WM_DB_HOSTNAME=$WM_DB_HOSTNAME" >> $HOME/.profile
           </code></pre>
         </section>
 
         <section id="api">
           <h1>API</h1>
-          <p>Code substitution at integration points. Deploy the API tier with Nova.</p>
+        </section>
+
+        <section>
+          <h2>Pick an Image</h2>
+          <pre><code data-trim class="bash">
+workon osc
+openstack image list
+export IMAGE_NAME="Ubuntu 15.04 (Vivid Vervet) (PVHVM)"
+echo "export IMAGE_NAME=$IMAGE_NAME" >> $HOME/.profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Pick an Flavor</h2>
+          <pre><code data-trim class="bash">
+openstack flavor list
+export FLAVOR_ID=performance1-2
+echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Create an API Server</h2>
+          <pre><code data-trim class="bash">
+openstack server create --image $IMAGE_NAME --flavor=$FLAVOR_ID --key-name qcon api-1
+          </code></pre>
         </section>
 
         <section id="app">
@@ -524,6 +588,21 @@ trove --json list 2>/dev/null
           <h1>Deployment Revisited</h1>
           <p>Revisit deployment and show a Heat template for what we just deployed with the CLI.</p>
         </section>
+
+        <section id="next">
+          <h1>Next</h1>
+        </section>
+
+        <section>
+          <ul>
+            <li>Networks (Neutron)</li>
+            <li>SSL ([Let's Encrypt](https://letsencrypt.org/))</li>
+            <li>Load Testing</li>
+            <li>Scaling</li>
+            <li>CI/CD</li>
+          </ul>
+        </section>
+
 
         <section id="thanks">
           <h1>Thanks!</h1>
