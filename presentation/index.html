@@ -570,7 +570,7 @@ echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
         <section>
           <h2>Create an API Server</h2>
           <pre><code data-trim class="bash">
-openstack server create --image $IMAGE_NAME --flavor=$FLAVOR_ID --key-name qcon api-1
+openstack server create --image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon --config-drive=true --user-data $HOME/app-on-openstack/code/api/cloud-config.txt api-1
           </code></pre>
         </section>
 
