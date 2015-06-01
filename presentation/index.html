@@ -338,14 +338,15 @@
         </section>
 
         <section>
-          <a href="http://everett-toews.github.io/rackspace-developer-doubleplusgood/presentation/#/secure">Security Advice</a>
+          <a href="http://everett-toews.github.io/rackspace-developer-doubleplusgood/presentation/#/secure" target="_blank">Security Advice</a>
         </section>
 
         <section>
-          <h2>Login &amp; Update</h2>
+          <h2>Login, Update, and Utils</h2>
           <pre><code data-trim class="bash">
 ssh root@my.dev-server.ipv4.address
 apt-get -y update; apt-get -y upgrade
+apt-get -y install vim git jq
           </code></pre>
         </section>
 
@@ -466,7 +467,42 @@ chmod 400 $HOME/.ssh/id_rsa.qcon
 
         <section id="database">
           <h1>Database</h1>
-          <p>Deploy the database with Trove.</p>
+        </section>
+
+        <section>
+          <h1>Databases</h1>
+          <h2>(Trove)</h2>
+        </section>
+
+        <section>
+          <h2>Install Databases Client</h2>
+          <pre><code data-trim class="bash">
+workon osc
+pip install python-troveclient
+trove --version
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Configure Environment</h2>
+          <pre><code data-trim class="bash">
+cat &lt;&lt;EOF &gt;&gt; $HOME/.profile
+export OS_TENANT_ID=$OS_PROJECT_NAME
+export TROVE_SERVICE_TYPE=rax:database
+EOF
+source .profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Run Databases Client</h2>
+          <pre><code data-trim class="bash">
+workon osc
+trove flavor-list
+trove --debug list
+trove create --size 2 --databases watermark --users wmadmin:password --datastore MySQL watermark 2
+trove --json list 2>/dev/null
+          </code></pre>
         </section>
 
         <section id="api">
