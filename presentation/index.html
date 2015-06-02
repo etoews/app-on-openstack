@@ -474,10 +474,14 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
               <li>File: $HOME/.ssh/id_rsa.qcon_github</li>
               <li>Passphrase: &lt;empty&gt;</li>
             </ul>
-            <li>Step 3:</li>
-            <ul>
-              <li><code data-trim class="bash">ssh-add $HOME/.ssh/id_rsa.qcon_github</code></li>
-            </ul>
+            <li>Step 3 (do this instead):</li>
+              <pre><code data-trim class="bash">
+TAB="$(printf '\t')"
+cat &lt;&lt;EOF &gt;&gt; $HOME/.ssh/config
+Host github.com
+${TAB}IdentityFile $HOME/.ssh/id_rsa.qcon_github
+EOF
+              </code></pre>
             <li>Step 4:</li>
             <ul>
               <li>Skip xclip</li>
@@ -487,9 +491,19 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
         </section>
 
         <section>
-          <h2>Fork 'n Clone</h2>
+          <h2>Fork</h2>
+          <ol>
+            <li><a href="https://github.com/everett-toews/app-on-openstack" target="_blank">app-on-openstack</a></li>
+            <li>Fork</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Clone</h2>
           <pre><code data-trim class="bash">
-git clone git@github.com:everett-toews/app-on-openstack.git
+echo "export GITHUB_USERNAME=my-github-useranme" >> $HOME/.profile
+source $HOME/.profile
+git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
           </code></pre>
         </section>
 
@@ -566,7 +580,7 @@ source $HOME/.profile
           <pre><code data-trim class="bash">
 mkvirtualenv api
 pip install -r $HOME/app-on-openstack/code/api/requirements.txt
-
+python $HOME/app-on-openstack/code/api/watermark/api.py create_all
           </code></pre>
         </section>
 
@@ -634,9 +648,12 @@ api-1
 
         <section>
           <ul>
+            <li>More security</li>
+            <li>Don't run as root :(</li>
+            <li>Generate your own SSH keys</li>
             <li>Networks (Neutron)</li>
             <li>SSL (<a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>)</li>
-            <li>Load Testing</li>
+            <li>Load testing</li>
             <li>Scaling</li>
             <li>CI/CD</li>
           </ul>
