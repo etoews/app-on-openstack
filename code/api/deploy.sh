@@ -3,13 +3,13 @@
 apt-get -y update; apt-get -y upgrade
 apt-get -y install git python-pip
 
-echo "source $HOME/api_env.rc" >> $HOME/.profile
-echo "source $HOME/db_env.rc" >> $HOME/.profile
-source $HOME/.profile
+echo "source /root/api_env.rc" >> /root/.profile
+echo "source /root/db_env.rc" >> /root/.profile
+source /root/.profile
 
-git clone https://github.com/$GITHUB_USERNAME/app-on-openstack.git
+git clone https://github.com/$GITHUB_USERNAME/app-on-openstack.git /root/app-on-openstack
 pip install virtualenv
 virtualenv api-venv
 source api-venv/bin/activate
-pip install -r $HOME/app-on-openstack/code/api/requirements.txt
-python $HOME/app-on-openstack/code/api/watermark/api.py runserver --host 0.0.0.0 &
+pip install -r /root/app-on-openstack/code/api/watermark/requirements.txt
+python /root/app-on-openstack/code/api/watermark/api.py runserver --host 0.0.0.0 &
