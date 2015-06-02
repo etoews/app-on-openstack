@@ -67,7 +67,7 @@ class Image(db.Model):
     __tablename__ = 'images'
 
     id = db.Column(db.Integer, primary_key=True)
-    href = db.Column(db.String(256), unique=True, index=True, nullable=False)
+    href = db.Column(db.String(256), unique=True, nullable=False)
 
     def to_json(self):
         json = {'href': self.href}
