@@ -352,6 +352,7 @@ apt-get -y install vim git jq
         </section>
 
         <section>
+          <h2>Utils</h2>
           <ul>
             <li>vim</li>
             <li>git</li>
@@ -394,6 +395,7 @@ export OS_PASSWORD=my-password
 EOF
 echo "source $HOME/os_env.rc" >> $HOME/.profile
 source $HOME/.profile
+env | grep OS_
           </code></pre>
         </section>
 
@@ -471,7 +473,7 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
           <ul>
             <li>Step 2:</li>
             <ul>
-              <li>File: $HOME/.ssh/id_rsa.qcon_github</li>
+              <li>File: /root/.ssh/id_rsa.qcon_github</li>
               <li>Passphrase: &lt;empty&gt;</li>
             </ul>
             <li>Step 3 (do this instead):</li>
@@ -538,7 +540,7 @@ trove --version
         <section>
           <h2>Configure Environment</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/.os_env.rc
+cat &lt;&lt;EOF &gt;&gt; $HOME/os_env.rc
 export OS_TENANT_ID=$OS_PROJECT_NAME
 export TROVE_SERVICE_TYPE=rax:database
 EOF
@@ -572,6 +574,7 @@ export WM_DB_DATABASE=watermark
 EOF
 echo "source $HOME/db_env.rc" >> $HOME/.profile
 source $HOME/.profile
+env | grep WM_
           </code></pre>
         </section>
 
@@ -580,7 +583,7 @@ source $HOME/.profile
           <pre><code data-trim class="bash">
 mkvirtualenv api
 pip install -r $HOME/app-on-openstack/code/api/requirements.txt
-python $HOME/app-on-openstack/code/api/watermark/api.py create_all
+python $HOME/app-on-openstack/code/api/manage.py create_all
           </code></pre>
         </section>
 
