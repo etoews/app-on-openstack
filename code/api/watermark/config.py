@@ -30,7 +30,7 @@ class Config:
             database=os.getenv('WM_DB_DATABASE'))
 
     @classmethod
-    def init_api(cls, api):
+    def init_app(cls, app):
         pass
 
 
@@ -44,8 +44,8 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     @classmethod
-    def init_api(cls, api):
-        Config.init_api(api)
+    def init_app(cls, app):
+        Config.init_app(app)
 
         # email errors to the administrators
         import logging
@@ -69,8 +69,8 @@ class ProductionConfig(Config):
 
 class UnixConfig(ProductionConfig):
     @classmethod
-    def init_api(cls, api):
-        ProductionConfig.init_api(api)
+    def init_app(cls, app):
+        ProductionConfig.init_app(app)
 
         # log to syslog
         import logging
