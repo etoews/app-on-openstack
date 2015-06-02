@@ -23,7 +23,7 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = \
         '{engine}://{username}:{password}@{hostname}/{database}'.format(
-            engine=os.getenv('WM_DB_ENGINE'),
+            engine=os.getenv('WM_DB_ENGINE_DRIVER'),
             username=os.getenv('WM_DB_USERNAME'),
             password=os.getenv('WM_DB_PASSWORD'),
             hostname=os.getenv('WM_DB_HOSTNAME'),
