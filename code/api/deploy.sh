@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-apt-get -y update; apt-get -y upgrade
-apt-get -y install git python-pip
+apt-get -y -qqq update; apt-get -y -qqq upgrade
+apt-get -y -qqq install git python-pip
 
 echo "source /root/api_env.rc" >> /root/.profile
 echo "source /root/db_env.rc" >> /root/.profile
@@ -11,5 +11,5 @@ git clone https://github.com/$GITHUB_USERNAME/app-on-openstack.git /root/app-on-
 pip install virtualenv
 virtualenv api-venv
 source api-venv/bin/activate
-pip install -r /root/app-on-openstack/code/api/watermark/requirements.txt
-python /root/app-on-openstack/code/api/watermark/api.py runserver --host 0.0.0.0 &
+pip install -r /root/app-on-openstack/code/api/requirements.txt
+python /root/app-on-openstack/code/api/manage.py runserver --host 0.0.0.0 &
