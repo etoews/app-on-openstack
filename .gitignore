@@ -56,3 +56,6 @@ target/
 
 # Jekyll
 _site/
+
+# Config
+*_env.rc

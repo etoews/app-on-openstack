@@ -81,12 +81,13 @@
             <li><a href="#/app">App</a></li>
             <li><a href="#/run">Run</a></li>
             <li><a href="#/deployment-revisit">Deployment Revisited?</a></li>
+            <li><a href="#/next">Next</a></li>
           </ol>
         </section>
 
         <section>
           <p><img src="img/stop.png"></p>
-          <p>Some Action</p>
+          <p>Do Something</p>
         </section>
 
         <section id="cloud">
@@ -328,7 +329,7 @@
         <section>
           <span style="white-space: nowrap;">
             <ol>
-              <li>Server Name: dev-server</li>
+              <li>Server Name: deploy-server</li>
               <li>Region: IAD</li>
               <li>Image: Linux &gt; Ubuntu &gt; 15.04</li>
               <li>Flavor: 1 GB General Purpose v1</li>
@@ -344,7 +345,7 @@
         <section>
           <h2>Login, Update, and Utils</h2>
           <pre><code data-trim class="bash">
-ssh root@my.dev-server.ipv4.address
+ssh root@my.deploy-server.ipv4.address
 apt-get -y update; apt-get -y upgrade
 apt-get -y install vim git jq
           </code></pre>
@@ -384,13 +385,14 @@ source $HOME/.profile
         <section>
           <h2>Configure Environment</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/.profile
+cat &lt;&lt;EOF &gt;&gt; $HOME/os_env.rc
 export OS_AUTH_URL=https://identity.api.rackspacecloud.com/v2.0/
 export OS_REGION_NAME=IAD
 export OS_USERNAME=my-username
 export OS_PROJECT_NAME=my-account-number
 export OS_PASSWORD=my-password
 EOF
+echo "source $HOME/os_env.rc" >> $HOME/.profile
 source $HOME/.profile
           </code></pre>
         </section>
@@ -522,7 +524,7 @@ trove --version
         <section>
           <h2>Configure Environment</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/.profile
+cat &lt;&lt;EOF &gt;&gt; $HOME/.os_env.rc
 export OS_TENANT_ID=$OS_PROJECT_NAME
 export TROVE_SERVICE_TYPE=rax:database
 EOF
@@ -538,9 +540,33 @@ trove flavor-list
 trove --debug list
 trove create --size 2 --databases watermark --users wmadmin:password --datastore MySQL watermark 2
 trove list 2>/dev/null
+trove --json list 2>/dev/null | jq .
 export WM_DB_HOSTNAME=$(trove --json list 2>/dev/null | jq -r .[0].hostname)
 echo $WM_DB_HOSTNAME
-echo "export WM_DB_HOSTNAME=$WM_DB_HOSTNAME" >> $HOME/.profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Configure DB Server Environment</h2>
+          <pre><code data-trim class="bash">
+cat &lt;&lt;EOF &gt;&gt; $HOME/db_env.rc
+export WM_DB_ENGINE_DRIVER=mysql+pymysql
+export WM_DB_USERNAME=wmadmin
+export WM_DB_PASSWORD=password
+export WM_DB_HOSTNAME=$WM_DB_HOSTNAME
+export WM_DB_DATABASE=watermark
+EOF
+echo "source $HOME/db_env.rc" >> $HOME/.profile
+source $HOME/.profile
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Initialize Database</h2>
+          <pre><code data-trim class="bash">
+mkvirtualenv api
+pip install -r $HOME/app-on-openstack/code/api/requirements.txt
+
           </code></pre>
         </section>
 
@@ -568,9 +594,22 @@ echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
         </section>
 
         <section>
+          <h2>Configure API Server Environment</h2>
+          <pre><code data-trim class="bash">
+cat &lt;&lt;EOF &gt;&gt; $HOME/api_env.rc
+export GITHUB_USERNAME=$GITHUB_USERNAME
+EOF
+          </code></pre>
+        </section>
+
+        <section>
           <h2>Create an API Server</h2>
           <pre><code data-trim class="bash">
-openstack server create --image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon --config-drive=true --user-data $HOME/app-on-openstack/code/api/cloud-config.txt api-1
+openstack server create \
+--image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
+--user-data $HOME/app-on-openstack/code/api/deploy.sh --config-drive true \
+--file /root/db_env.rc=$HOME/db_env.rc --file /root/api_env.rc=$HOME/api_env.rc \
+api-1
           </code></pre>
         </section>
 
