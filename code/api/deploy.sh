@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-apt-get -y -qqq update; apt-get -y -qqq upgrade
-apt-get -y -qqq install git python-pip
+apt-get -y -qq update; apt-get -y -qq upgrade
+apt-get -y -qq install git python-pip
 
 echo "source /root/api_env.rc" >> /root/.profile
 echo "source /root/db_env.rc" >> /root/.profile
