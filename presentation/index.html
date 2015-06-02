@@ -598,7 +598,7 @@ python $HOME/app-on-openstack/code/api/watermark/api.py create_all
 workon osc
 openstack image list
 export IMAGE_NAME="Ubuntu 15.04 (Vivid Vervet) (PVHVM)"
-echo "export IMAGE_NAME=$IMAGE_NAME" >> $HOME/.profile
+echo 'export IMAGE_NAME="'$IMAGE_NAME'"' >> $HOME/.profile
           </code></pre>
         </section>
 
