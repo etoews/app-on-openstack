@@ -661,6 +661,7 @@ echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
           <pre><code data-trim class="bash">
 cat &lt;&lt;EOF &gt;&gt; $HOME/api_env.rc
 export GITHUB_USERNAME=$GITHUB_USERNAME
+export WM_CONFIG_ENV=unix
 EOF
           </code></pre>
         </section>
@@ -669,10 +670,10 @@ EOF
           <h2>Create an API Server</h2>
           <pre><code data-trim class="bash">
 openstack server create \
---image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
---user-data $HOME/app-on-openstack/code/api/deploy.sh --config-drive true \
---file /root/db_env.rc=$HOME/db_env.rc --file /root/api_env.rc=$HOME/api_env.rc \
-api
+  --image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
+  --user-data $HOME/app-on-openstack/code/api/deploy.sh --config-drive true \
+  --file /root/db_env.rc=$HOME/db_env.rc --file /root/api_env.rc=$HOME/api_env.rc \
+  api
           </code></pre>
           <p><span style="font-style: italic;">Note: IMAGE_NAME or FLAVOR_ID</span></p>
           <p><span style="font-style: italic;">Note: Hostname "api"</span></p>
@@ -688,6 +689,14 @@ openstack server list --format json | \
   jq -r '.[] | select(.Name == "api").Networks' | \
   sed "s/.*private=\(.*\)/\1/"
 export WM_API_IPS=$(!!)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Login to any API Server</h2>
+          <pre><code data-trim class="bash">
+ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.api.server.ip
+tail -f /var/log/cloud-init-output.log
           </code></pre>
         </section>
 
@@ -710,6 +719,7 @@ export WM_API_IPS=$(!!)
 cat &lt;&lt;EOF &gt;&gt; $HOME/app_env.rc
 export GITHUB_USERNAME=$GITHUB_USERNAME
 export WM_API_IPS=$WM_API_IPS
+export WM_CONFIG_ENV=unix
 EOF
           </code></pre>
         </section>
@@ -718,10 +728,10 @@ EOF
           <h2>Create an App Server</h2>
           <pre><code data-trim class="bash">
 openstack server create \
---image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
---user-data $HOME/app-on-openstack/code/api/deploy.sh --config-drive true \
---file /root/db_env.rc=$HOME/db_env.rc --file /root/api_env.rc=$HOME/api_env.rc \
-app
+  --image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
+  --user-data $HOME/app-on-openstack/code/app/deploy.sh --config-drive true \
+  --file /root/app_env.rc=$HOME/app_env.rc \
+  app
           </code></pre>
           <p><span style="font-style: italic;">Note: IMAGE_NAME or FLAVOR_ID</span></p>
           <p><span style="font-style: italic;">Note: Hostname "app"</span></p>
@@ -730,6 +740,7 @@ app
         <section>
           <h2>Capture App Server IPs</h2>
           <pre><code data-trim class="bash">
+openstack server list
 openstack server list --format json | \
   jq -r '.[] | select(.Name == "app").Networks' | \
   sed "s/.*private=\(.*\)/\1/"
