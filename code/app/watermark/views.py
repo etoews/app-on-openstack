@@ -7,7 +7,10 @@ from . import main
 
 @main.route('/')
 def index():
-    url = current_app.config['API_ENDPOINT'] + '/v1/images'
+    url = '{scheme}://{endpoint}/v1/images'.format(
+        scheme=current_app.config['API_SCHEME'],
+        endpoint=current_app.config['API_ENDPOINT']
+    )
     headers = {'content-type': 'application/json'}
     response = requests.get(url, headers=headers)
     image_hrefs = [image['href'] for image in response.json()['images']]

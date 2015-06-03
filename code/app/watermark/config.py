@@ -2,6 +2,7 @@ import os
 
 
 class Config:
+    API_SCHEME = os.getenv('WM_API_SCHEME')
     API_ENDPOINT = os.getenv('WM_API_ENDPOINT')
 
     @classmethod
@@ -11,7 +12,8 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    API_ENDPOINT = "http://127.0.0.1:5000"
+    API_SCHEME = "http"
+    API_ENDPOINT = "127.0.0.1:5000"
 
 
 class TestingConfig(Config):
