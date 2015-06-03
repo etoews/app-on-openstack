@@ -58,6 +58,11 @@
           </center>
         </section>
 
+        <section id="goal">
+          <h1>Goal</h1>
+          <p>To give you the foundation of building and deploying an application on OpenStack and to give you the confidence to use tools at a higher level of abstraction in the future.
+        </section>
+
         <section>
           <h1>Agenda</h1>
           <ol>
@@ -409,7 +414,7 @@ openstack server list --format json
           </code></pre>
         </section>
 
-        <section>
+        <section id="qcon-key">
           <h2>SSH Key for Deploys</h2>
           <pre><code data-trim class="bash">
 openstack keypair create qcon &gt; $HOME/.ssh/id_rsa.qcon_deploy
@@ -514,9 +519,36 @@ git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
           <p><a href="https://docs.google.com/drawings/d/1NWW2MVz4jZqohHDXyhMIt9D7N6fLJp5WwHwfDOLcGFo/edit?usp=sharing">Describe the architecture</a>.</p>
         </section>
 
+        <section>
+          <img class="stretch" src="img/app-arch.jpg">
+        </section>
+
         <section id="workers">
           <h1>Workers</h1>
           <p>Code substitution at integration points. Deploy and configure the workers with Nova.</p>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-workers.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
+        </section>
+
+        <section id="queues">
+          <h1>Queues</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-queues.jpg">
+          <p><span style="font-style: italic;">Note: Stateful</span></p>
+        </section>
+
+        <section id="object-storage">
+          <h1>Object Storage</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-object-storage.jpg">
+          <p><span style="font-style: italic;">Note: Stateful</span></p>
         </section>
 
         <section id="database">
@@ -524,8 +556,13 @@ git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
         </section>
 
         <section>
+          <img class="stretch" src="img/app-arch-database.jpg">
+          <p><span style="font-style: italic;">Note: Stateful</span></p>
+        </section>
+
+        <section>
           <h1>Databases</h1>
-          <h2>(Trove)</h2>
+          <h2>MySQL</h2>
         </section>
 
         <section>
@@ -592,6 +629,11 @@ python $HOME/app-on-openstack/code/api/manage.py create_all
         </section>
 
         <section>
+          <img class="stretch" src="img/app-arch-api.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
+        </section>
+
+        <section>
           <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/api/requirements.txt" target="_blank">requirements.txt</a></h2>
         </section>
 
@@ -630,13 +672,69 @@ openstack server create \
 --image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
 --user-data $HOME/app-on-openstack/code/api/deploy.sh --config-drive true \
 --file /root/db_env.rc=$HOME/db_env.rc --file /root/api_env.rc=$HOME/api_env.rc \
-api-1
+api
+          </code></pre>
+          <p><span style="font-style: italic;">Note: IMAGE_NAME or FLAVOR_ID</span></p>
+          <p><span style="font-style: italic;">Note: Hostname "api"</span></p>
+        </section>
+
+        <section>
+          <h2>Capture API Server IPs</h2>
+          <pre><code data-trim class="bash">
+openstack server list --format json | jq .
+openstack server list --format json | \
+  jq -r '.[] | select(.Name == "api").Networks'
+openstack server list --format json | \
+  jq -r '.[] | select(.Name == "api").Networks' | \
+  sed "s/.*private=\(.*\)/\1/"
+export WM_API_IPS=$(!!)
           </code></pre>
         </section>
 
         <section id="app">
           <h1>App</h1>
-          <p>Code substitution at integration points. Deploy the App tier with Nova.</p>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-app.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
+        </section>
+
+        <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/app/requirements.txt" target="_blank">requirements.txt</a></h2>
+        </section>
+
+        <section>
+          <h2>Configure App Server Environment</h2>
+          <pre><code data-trim class="bash">
+cat &lt;&lt;EOF &gt;&gt; $HOME/app_env.rc
+export GITHUB_USERNAME=$GITHUB_USERNAME
+export WM_API_IPS=$WM_API_IPS
+EOF
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Create an App Server</h2>
+          <pre><code data-trim class="bash">
+openstack server create \
+--image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
+--user-data $HOME/app-on-openstack/code/api/deploy.sh --config-drive true \
+--file /root/db_env.rc=$HOME/db_env.rc --file /root/api_env.rc=$HOME/api_env.rc \
+app
+          </code></pre>
+          <p><span style="font-style: italic;">Note: IMAGE_NAME or FLAVOR_ID</span></p>
+          <p><span style="font-style: italic;">Note: Hostname "app"</span></p>
+        </section>
+
+        <section>
+          <h2>Capture App Server IPs</h2>
+          <pre><code data-trim class="bash">
+openstack server list --format json | \
+  jq -r '.[] | select(.Name == "app").Networks' | \
+  sed "s/.*private=\(.*\)/\1/"
+export WM_APP_IPS=$(!!)
+          </code></pre>
         </section>
 
         <section id="run">
@@ -657,9 +755,11 @@ api-1
           <ul>
             <li>More security</li>
             <li>Don't run as root :(</li>
-            <li>Generate your own SSH keys</li>
+            <li><a href="#/qcon-key">Generate your own SSH keys</a></li>
+            <li>GitHub deploy SSH keys</li>
             <li>Networks (Neutron)</li>
             <li>SSL (<a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>)</li>
+            <li>Service discovery</li>
             <li>Load testing</li>
             <li>Scaling</li>
             <li>CI/CD</li>
