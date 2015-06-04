@@ -4,3 +4,5 @@ from watermark import connect
 
 conn = connect.get_connection()
 conn.message.create_queue(name=connect.QUEUE)
+
+print("%s queue created" % connect.QUEUE)
