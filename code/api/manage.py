@@ -3,8 +3,8 @@ from flask.ext.script import Manager
 from watermark.models import db, Image
 from watermark.app import create_app
 
-
-manager = Manager(create_app)
+app = create_app()
+manager = Manager(app)
 
 
 @manager.command
