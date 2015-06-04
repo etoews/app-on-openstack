@@ -398,6 +398,7 @@ export OS_USERNAME=my-username
 export OS_PROJECT_NAME=my-account-number
 export OS_PASSWORD=my-password
 EOF
+
 echo "source $HOME/os_env.rc" >> $HOME/.profile
 source $HOME/.profile
 env | grep OS_
@@ -484,6 +485,7 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
             <li>Step 3 (do this instead):</li>
               <pre><code data-trim class="bash">
 TAB="$(printf '\t')"
+
 cat &lt;&lt;EOF &gt;&gt; $HOME/.ssh/config
 Host github.com
 ${TAB}IdentityFile $HOME/.ssh/id_rsa.qcon_github
@@ -581,6 +583,7 @@ cat &lt;&lt;EOF &gt;&gt; $HOME/os_env.rc
 export OS_TENANT_ID=$OS_PROJECT_NAME
 export TROVE_SERVICE_TYPE=rax:database
 EOF
+
 source $HOME/.profile
           </code></pre>
         </section>
@@ -590,8 +593,14 @@ source $HOME/.profile
           <pre><code data-trim class="bash">
 workon osc
 trove flavor-list
-trove --debug list
-trove create --size 2 --databases watermark --users wmadmin:password --datastore MySQL watermark 2
+
+trove create \
+  --size 2
+  --databases watermark
+  --users wmadmin:password
+  --datastore MySQL
+  watermark 2
+
 trove list 2>/dev/null
 trove --json list 2>/dev/null | jq .
 export WM_DB_HOSTNAME=$(trove --json list 2>/dev/null | jq -r .[0].hostname)
@@ -609,6 +618,7 @@ export WM_DB_PASSWORD=password
 export WM_DB_HOSTNAME=$WM_DB_HOSTNAME
 export WM_DB_DATABASE=watermark
 EOF
+
 echo "source $HOME/db_env.rc" >> $HOME/.profile
 source $HOME/.profile
 env | grep WM_
@@ -670,25 +680,43 @@ EOF
           <h2>Create an API Server</h2>
           <pre><code data-trim class="bash">
 openstack server create \
-  --image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
-  --user-data $HOME/app-on-openstack/code/api/deploy.sh --config-drive true \
-  --file /root/db_env.rc=$HOME/db_env.rc --file /root/api_env.rc=$HOME/api_env.rc \
+  --image "$IMAGE_NAME" \
+  --flavor $FLAVOR_ID \
+  --key-name qcon \
+  --user-data $HOME/app-on-openstack/code/api/deploy.sh \
+  --config-drive true \
+  --file /root/db_env.rc=$HOME/db_env.rc \
+  --file /root/api_env.rc=$HOME/api_env.rc \
   api
+!!
           </code></pre>
           <p><span style="font-style: italic;">Note: IMAGE_NAME or FLAVOR_ID</span></p>
           <p><span style="font-style: italic;">Note: Hostname "api"</span></p>
         </section>
 
         <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/api/deploy.sh" target="_blank">deploy.sh</a></h2>
+        </section>
+
+        <section>
           <h2>Capture API Server IPs</h2>
           <pre><code data-trim class="bash">
 openstack server list --format json | jq .
+
 openstack server list --format json | \
   jq -r '.[] | select(.Name == "api").Networks'
+
 openstack server list --format json | \
   jq -r '.[] | select(.Name == "api").Networks' | \
   sed "s/.*private=\(.*\)/\1/"
-export WM_API_IPS=$(!!)
+
+cat &lt;&lt;EOF &gt;&gt; $HOME/api_ips.rc
+export WM_API_IPS=(
+$(openstack server list --format json | \
+  jq -r '.[] | select(.Name == "api").Networks' | \
+  sed "s/.*private=\(.*\)/\1/")
+)
+EOF
           </code></pre>
         </section>
 
@@ -697,7 +725,47 @@ export WM_API_IPS=$(!!)
           <pre><code data-trim class="bash">
 ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.api.server.ip
 tail -f /var/log/cloud-init-output.log
+tail -f /var/log/syslog
           </code></pre>
+        </section>
+
+        <section>
+          <h2>Create an API Load Balancer Server</h2>
+          <pre><code data-trim class="bash">
+openstack server create \
+  --image "$IMAGE_NAME" \
+  --flavor $FLAVOR_ID \
+  --key-name qcon \
+  --user-data $HOME/app-on-openstack/code/lb/deploy.sh \
+  --config-drive true \
+  --file /root/api_ips.rc=$HOME/api_ips.rc \
+  api-lb
+          </code></pre>
+          <p><span style="font-style: italic;">Note: Hostname "api-lb"</span></p>
+        </section>
+
+        <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/lb/deploy.sh" target="_blank">deploy.sh</a></h2>
+        </section>
+
+        <section>
+          <h2>Capture API Load Balancer IP</h2>
+          <pre><code data-trim class="bash">
+cat &lt;&lt;EOF &gt;&gt; $HOME/lb_ip.rc
+export WM_API_LB_IP=$(openstack server list --format json | \
+  jq -r '.[] | select(.Name == "api-lb").Networks' | \
+  sed "s/.*private=\(.*\)/\1/")
+EOF
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Test the API</h2>
+          <pre><code data-trim class="bash">
+openstack server list
+curl my.api.lb.server
+          </code></pre>
+          <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
         </section>
 
         <section id="app">
@@ -728,8 +796,11 @@ EOF
           <h2>Create an App Server</h2>
           <pre><code data-trim class="bash">
 openstack server create \
-  --image "$IMAGE_NAME" --flavor $FLAVOR_ID --key-name qcon \
-  --user-data $HOME/app-on-openstack/code/app/deploy.sh --config-drive true \
+  --image "$IMAGE_NAME" \
+  --flavor $FLAVOR_ID \
+  --key-name qcon \
+  --user-data $HOME/app-on-openstack/code/app/deploy.sh
+  --config-drive true \
   --file /root/app_env.rc=$HOME/app_env.rc \
   app
           </code></pre>
