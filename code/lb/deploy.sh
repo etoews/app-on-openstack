@@ -4,9 +4,9 @@ apt-get -y -qq update; apt-get -y -qq upgrade
 apt-get -y -qq install haproxy
 
 IFS=$'\n\t'
-source /root/api_ips.rc
+source /root/ips.rc
 
-for IP in ${WM_API_IPS[@]}; do
+for IP in ${WM_IPS[@]}; do
   echo "        server app $IP" >> /root/lb.haproxy
 done
 
