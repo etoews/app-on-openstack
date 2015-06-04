@@ -711,7 +711,7 @@ openstack server list --format json | \
   sed "s/.*private=\(.*\)/\1/"
 
 cat &lt;&lt;EOF &gt;&gt; $HOME/api_ips.rc
-export WM_API_IPS=(
+export WM_IPS=(
 $(openstack server list --format json | \
   jq -r '.[] | select(.Name == "api").Networks' | \
   sed "s/.*private=\(.*\)/\1/")
@@ -738,7 +738,7 @@ openstack server create \
   --key-name qcon \
   --user-data $HOME/app-on-openstack/code/lb/deploy.sh \
   --config-drive true \
-  --file /root/api_ips.rc=$HOME/api_ips.rc \
+  --file /root/ips.rc=$HOME/api_ips.rc \
   api-lb
           </code></pre>
           <p><span style="font-style: italic;">Note: Hostname "api-lb"</span></p>
@@ -751,7 +751,7 @@ openstack server create \
         <section>
           <h2>Capture API Load Balancer IP</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/lb_ip.rc
+cat &lt;&lt;EOF &gt;&gt; $HOME/api_lb_ip.rc
 export WM_API_LB_IP=$(openstack server list --format json | \
   jq -r '.[] | select(.Name == "api-lb").Networks' | \
   sed "s/.*private=\(.*\)/\1/")
@@ -784,9 +784,12 @@ curl my.api.lb.server
         <section>
           <h2>Configure App Server Environment</h2>
           <pre><code data-trim class="bash">
+source $HOME/api_lb_ip.rc
+
 cat &lt;&lt;EOF &gt;&gt; $HOME/app_env.rc
 export GITHUB_USERNAME=$GITHUB_USERNAME
-export WM_API_IPS=$WM_API_IPS
+export WM_API_SCHEME=http
+export WM_API_ENDPOINT=$WM_API_LB_IP
 export WM_CONFIG_ENV=unix
 EOF
           </code></pre>
@@ -799,24 +802,54 @@ openstack server create \
   --image "$IMAGE_NAME" \
   --flavor $FLAVOR_ID \
   --key-name qcon \
-  --user-data $HOME/app-on-openstack/code/app/deploy.sh
+  --user-data $HOME/app-on-openstack/code/app/deploy.sh \
   --config-drive true \
   --file /root/app_env.rc=$HOME/app_env.rc \
   app
+!!
           </code></pre>
-          <p><span style="font-style: italic;">Note: IMAGE_NAME or FLAVOR_ID</span></p>
           <p><span style="font-style: italic;">Note: Hostname "app"</span></p>
         </section>
 
         <section>
           <h2>Capture App Server IPs</h2>
           <pre><code data-trim class="bash">
-openstack server list
-openstack server list --format json | \
+cat &lt;&lt;EOF &gt;&gt; $HOME/app_ips.rc
+export WM_IPS=(
+$(openstack server list --format json | \
   jq -r '.[] | select(.Name == "app").Networks' | \
-  sed "s/.*private=\(.*\)/\1/"
-export WM_APP_IPS=$(!!)
+  sed "s/.*private=\(.*\)/\1/")
+)
+EOF
           </code></pre>
+        </section>
+
+        <section>
+          <h2>Create an App Load Balancer Server</h2>
+          <pre><code data-trim class="bash">
+openstack server create \
+  --image "$IMAGE_NAME" \
+  --flavor $FLAVOR_ID \
+  --key-name qcon \
+  --user-data $HOME/app-on-openstack/code/lb/deploy.sh \
+  --config-drive true \
+  --file /root/ips.rc=$HOME/app_ips.rc \
+  app-lb
+          </code></pre>
+          <p><span style="font-style: italic;">Note: Hostname "app-lb"</span></p>
+        </section>
+
+        <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/lb/deploy.sh" target="_blank">deploy.sh</a></h2>
+        </section>
+
+        <section>
+          <h2>Test the API</h2>
+          <pre><code data-trim class="bash">
+openstack server list
+curl my.api.lb.server
+          </code></pre>
+          <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
         </section>
 
         <section id="run">
@@ -834,7 +867,9 @@ export WM_APP_IPS=$(!!)
         </section>
 
         <section>
+          <h2>Next</h2>
           <ul>
+            <li>More grindstone</li>
             <li>More security</li>
             <li>Don't run as root :(</li>
             <li><a href="#/qcon-key">Generate your own SSH keys</a></li>
@@ -842,6 +877,7 @@ export WM_APP_IPS=$(!!)
             <li>Networks (Neutron)</li>
             <li>SSL (<a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>)</li>
             <li>Service discovery</li>
+            <li>DNS</li>
             <li>Load testing</li>
             <li>Scaling</li>
             <li>CI/CD</li>
