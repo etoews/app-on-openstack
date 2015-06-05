@@ -95,6 +95,9 @@
           <p>Do Something</p>
         </section>
 
+
+
+
         <section id="cloud">
           <h1>The Cloud</h1>
         </section>
@@ -123,6 +126,9 @@
           <h1>Infrastructure</h1>
           <h1>with an API</h1>
         </section>
+
+
+
 
         <section id="openstack">
           <h1>OpenStack</h1>
@@ -271,6 +277,9 @@
           </ul>
         </section>
 
+
+
+
         <section id="access">
           <h1>Access</h1>
         </section>
@@ -288,6 +297,9 @@
           <p><img src="img/stop.png"></p>
           <a href="http://rum.phymata.com/user" target="_blank">Temp Account</a>
         </section>
+
+
+
 
         <section id="control">
           <h1>Cloud Control</h1>
@@ -382,7 +394,7 @@ source $HOME/.profile
 mkvirtualenv osc
 pip install python-openstackclient
 openstack --version
-openstack complete >> .osc.bash_completion
+openstack complete > .osc.bash_completion
 echo "source $HOME/.osc.bash_completion" &gt;&gt; $HOME/.profile
 source $HOME/.profile
           </code></pre>
@@ -422,6 +434,9 @@ openstack keypair create qcon &gt; $HOME/.ssh/id_rsa.qcon_deploy
 chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
           </code></pre>
         </section>
+
+
+
 
         <section id="deployment">
           <h1>Deployment</h1>
@@ -464,9 +479,15 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
           <h1>and Ansible</h1>
         </section>
 
+
+
+
         <section id="break">
           <h1>Break</h1>
         </section>
+
+
+
 
         <section id="application">
           <h1>The Application</h1>
@@ -516,6 +537,9 @@ git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
           </code></pre>
         </section>
 
+
+
+
         <section id="architecture">
           <h1>The Architecture</h1>
           <p><a href="https://docs.google.com/drawings/d/1NWW2MVz4jZqohHDXyhMIt9D7N6fLJp5WwHwfDOLcGFo/edit?usp=sharing">Describe the architecture</a>.</p>
@@ -525,24 +549,8 @@ git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
           <img class="stretch" src="img/app-arch.jpg">
         </section>
 
-        <section id="workers">
-          <h1>Workers</h1>
-          <p>Code substitution at integration points. Deploy and configure the workers with Nova.</p>
-        </section>
 
-        <section>
-          <img class="stretch" src="img/app-arch-workers.jpg">
-          <p><span style="font-style: italic;">Note: Stateless</span></p>
-        </section>
 
-        <section id="queues">
-          <h1>Queues</h1>
-        </section>
-
-        <section>
-          <img class="stretch" src="img/app-arch-queues.jpg">
-          <p><span style="font-style: italic;">Note: Stateful</span></p>
-        </section>
 
         <section id="object-storage">
           <h1>Object Storage</h1>
@@ -552,6 +560,9 @@ git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
           <img class="stretch" src="img/app-arch-object-storage.jpg">
           <p><span style="font-style: italic;">Note: Stateful</span></p>
         </section>
+
+
+
 
         <section id="database">
           <h1>Database</h1>
@@ -634,6 +645,9 @@ python $HOME/app-on-openstack/code/api/manage.py create_all
           </code></pre>
         </section>
 
+
+
+
         <section id="api">
           <h1>API</h1>
         </section>
@@ -666,6 +680,7 @@ echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
           </code></pre>
         </section>
 
+
         <section>
           <h2>Configure API Server Environment</h2>
           <pre><code data-trim class="bash">
@@ -677,7 +692,7 @@ EOF
         </section>
 
         <section>
-          <h2>Create an API Server</h2>
+          <h2>Create API Servers</h2>
           <pre><code data-trim class="bash">
 openstack server create \
   --image "$IMAGE_NAME" \
@@ -690,7 +705,6 @@ openstack server create \
   api
 !!
           </code></pre>
-          <p><span style="font-style: italic;">Note: IMAGE_NAME or FLAVOR_ID</span></p>
           <p><span style="font-style: italic;">Note: Hostname "api"</span></p>
         </section>
 
@@ -768,6 +782,62 @@ curl my.api.lb.server
           <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
         </section>
 
+
+
+
+        <section id="queues">
+          <h1>Queues</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-queues.jpg">
+          <p><span style="font-style: italic;">Note: Stateful ("temporarily")</span></p>
+        </section>
+
+        <section>
+          <h2>Create Queue</h2>
+          <pre><code data-trim class="bash">
+workon osc
+pip install -r $HOME/app-on-openstack/code/worker/requirements.txt
+$HOME/app-on-openstack/code/worker/deploy.py
+          </code></pre>
+        </section>
+
+        <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/worker/deploy.py" target="_blank">deploy.py</a></h2>
+        </section>
+
+
+
+
+        <section id="workers">
+          <h1>Workers</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-workers.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
+        </section>
+
+        <section>
+          <h2>Create Worker Servers</h2>
+          <pre><code data-trim class="bash">
+openstack server create \
+  --image "$IMAGE_NAME" \
+  --flavor $FLAVOR_ID \
+  --key-name qcon \
+  --user-data $HOME/app-on-openstack/code/worker/deploy.sh \
+  --config-drive true \
+  --file /root/os_env.rc=$HOME/os_env.rc \
+  worker
+!!
+          </code></pre>
+          <p><span style="font-style: italic;">Note: Hostname "worker"</span></p>
+        </section>
+
+
+
+
         <section id="app">
           <h1>App</h1>
         </section>
@@ -796,7 +866,7 @@ EOF
         </section>
 
         <section>
-          <h2>Create an App Server</h2>
+          <h2>Create App Servers</h2>
           <pre><code data-trim class="bash">
 openstack server create \
   --image "$IMAGE_NAME" \
@@ -852,15 +922,24 @@ curl my.api.lb.server
           <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
         </section>
 
+
+
+
         <section id="run">
           <h1>Run</h1>
           <p>Run the app and use it.</p>
         </section>
 
+
+
+
         <section id="deployment-revisit">
           <h1>Deployment Revisited</h1>
           <p>Revisit deployment and show a Heat template for what we just deployed with the CLI.</p>
         </section>
+
+
+
 
         <section id="next">
           <h1>Next</h1>
@@ -869,6 +948,7 @@ curl my.api.lb.server
         <section>
           <h2>Next</h2>
           <ul>
+            <li>DB Cluster (easy!)</li>
             <li>More grindstone</li>
             <li>More security</li>
             <li>Don't run as root :(</li>
