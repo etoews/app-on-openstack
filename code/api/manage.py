@@ -10,6 +10,7 @@ manager = Manager(app)
 @manager.command
 def create_all():
     db.create_all()
+    dummy_data()
 
 @manager.command
 def drop_all():
@@ -17,9 +18,8 @@ def drop_all():
 
 @manager.command
 def dummy_data():
-    test_image_1 = Image(href="http://i.imgur.com/fTdi7VJ.png")
-    test_image_2 = Image(href="http://i.imgur.com/WHdUhXw.jpg")
-    db.session.add_all([test_image_1, test_image_2])
+    test_image_1 = Image(href="http://i.imgur.com/2lGfskf.jpg")
+    db.session.add_all([test_image_1])
     db.session.commit()
 
 
