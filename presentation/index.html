@@ -290,7 +290,7 @@
         </section>
 
         <section>
-          <a href="#/devplus">developer+ Advice</a>
+          <a href="#/devplus-advice">developer+ Advice</a>
         </section>
 
         <section>
@@ -346,7 +346,7 @@
         <section>
           <span style="white-space: nowrap;">
             <ol>
-              <li>Server Name: deploy-server</li>
+              <li>Server Name: &lt;my-username&gt;-deploy-server</li>
               <li>Region: IAD</li>
               <li>Image: Linux &gt; Ubuntu &gt; 15.04</li>
               <li>Flavor: 1 GB General Purpose v1</li>
@@ -356,13 +356,10 @@
         </section>
 
         <section>
-          <a href="http://everett-toews.github.io/rackspace-developer-doubleplusgood/presentation/#/secure" target="_blank">Security Advice</a>
-        </section>
-
-        <section>
           <h2>Login, Update, and Utils</h2>
           <pre><code data-trim class="bash">
 ssh root@my.deploy-server.ipv4.address
+
 apt-get -y update; apt-get -y upgrade
 apt-get -y install vim git jq
           </code></pre>
@@ -382,8 +379,10 @@ apt-get -y install vim git jq
           <pre><code data-trim class="bash">
 apt-get -y install python-dev python-pip libssl-dev libffi-dev
 pip install virtualenv virtualenvwrapper
+
 echo "export WORKON_HOME=$HOME/.virtualenvs" &gt;&gt; $HOME/.profile
 echo "source /usr/local/bin/virtualenvwrapper.sh" &gt;&gt; $HOME/.profile
+
 source $HOME/.profile
           </code></pre>
         </section>
@@ -393,8 +392,10 @@ source $HOME/.profile
           <pre><code data-trim class="bash">
 mkvirtualenv osc
 pip install python-openstackclient
+
 openstack --version
 openstack complete > .osc.bash_completion
+
 echo "source $HOME/.osc.bash_completion" &gt;&gt; $HOME/.profile
 source $HOME/.profile
           </code></pre>
@@ -421,6 +422,7 @@ env | grep OS_
           <h2>Run OpenStack Client</h2>
           <pre><code data-trim class="bash">
 workon osc
+
 openstack image list
 openstack --debug server list
 openstack server list --format json
@@ -430,7 +432,8 @@ openstack server list --format json
         <section id="qcon-key">
           <h2>SSH Key for Deploys</h2>
           <pre><code data-trim class="bash">
-openstack keypair create qcon &gt; $HOME/.ssh/id_rsa.qcon_deploy
+openstack keypair create $OS_USERNAME-qcon &gt; $HOME/.ssh/id_rsa.qcon_deploy
+
 chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
           </code></pre>
         </section>
@@ -606,15 +609,17 @@ workon osc
 trove flavor-list
 
 trove create \
-  --size 2
-  --databases watermark
-  --users wmadmin:password
-  --datastore MySQL
-  watermark 2
+  --size 2 \
+  --databases watermark \
+  --users wmadmin:password \
+  --datastore MySQL \
+  $OS_USERNAME-watermark 2
 
 trove list 2>/dev/null
 trove --json list 2>/dev/null | jq .
-export WM_DB_HOSTNAME=$(trove --json list 2>/dev/null | jq -r .[0].hostname)
+
+export WM_DB_HOSTNAME=$(trove --json list 2>/dev/null | \
+  jq -r '.[] | select(.name == "'"$OS_USERNAME-watermark"'").hostname')
 echo $WM_DB_HOSTNAME
           </code></pre>
         </section>
@@ -666,6 +671,7 @@ python $HOME/app-on-openstack/code/api/manage.py create_all
           <pre><code data-trim class="bash">
 workon osc
 openstack image list
+
 export IMAGE_NAME="Ubuntu 15.04 (Vivid Vervet) (PVHVM)"
 echo 'export IMAGE_NAME="'$IMAGE_NAME'"' >> $HOME/.profile
           </code></pre>
@@ -675,6 +681,7 @@ echo 'export IMAGE_NAME="'$IMAGE_NAME'"' >> $HOME/.profile
           <h2>Pick an Flavor</h2>
           <pre><code data-trim class="bash">
 openstack flavor list
+
 export FLAVOR_ID=performance1-2
 echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
           </code></pre>
@@ -697,12 +704,13 @@ EOF
 openstack server create \
   --image "$IMAGE_NAME" \
   --flavor $FLAVOR_ID \
-  --key-name qcon \
+  --key-name $OS_USERNAME-qcon \
   --user-data $HOME/app-on-openstack/code/api/deploy.sh \
   --config-drive true \
   --file /root/db_env.rc=$HOME/db_env.rc \
   --file /root/api_env.rc=$HOME/api_env.rc \
-  api
+  $OS_USERNAME-api
+
 !!
           </code></pre>
           <p><span style="font-style: italic;">Note: Hostname "api"</span></p>
@@ -718,16 +726,16 @@ openstack server create \
 openstack server list --format json | jq .
 
 openstack server list --format json | \
-  jq -r '.[] | select(.Name == "api").Networks'
+  jq -r '.[] | select(.Name == "'"$OS_USERNAME-api"'").Networks'
 
 openstack server list --format json | \
-  jq -r '.[] | select(.Name == "api").Networks' | \
+  jq -r '.[] | select(.Name == "'"$OS_USERNAME-api"'").Networks' | \
   sed "s/.*private=\(.*\)/\1/"
 
 cat &lt;&lt;EOF &gt;&gt; $HOME/api_ips.rc
 export WM_IPS=(
 $(openstack server list --format json | \
-  jq -r '.[] | select(.Name == "api").Networks' | \
+  jq -r '.[] | select(.Name == "'"$OS_USERNAME-api"'").Networks' | \
   sed "s/.*private=\(.*\)/\1/")
 )
 EOF
@@ -749,11 +757,11 @@ tail -f /var/log/syslog
 openstack server create \
   --image "$IMAGE_NAME" \
   --flavor $FLAVOR_ID \
-  --key-name qcon \
+  --key-name $OS_USERNAME-qcon \
   --user-data $HOME/app-on-openstack/code/lb/deploy.sh \
   --config-drive true \
   --file /root/ips.rc=$HOME/api_ips.rc \
-  api-lb
+  $OS_USERNAME-api-lb
           </code></pre>
           <p><span style="font-style: italic;">Note: Hostname "api-lb"</span></p>
         </section>
@@ -767,7 +775,7 @@ openstack server create \
           <pre><code data-trim class="bash">
 cat &lt;&lt;EOF &gt;&gt; $HOME/api_lb_ip.rc
 export WM_API_LB_IP=$(openstack server list --format json | \
-  jq -r '.[] | select(.Name == "api-lb").Networks' | \
+  jq -r '.[] | select(.Name == "'"$OS_USERNAME-api-lb"'").Networks' | \
   sed "s/.*private=\(.*\)/\1/")
 EOF
           </code></pre>
@@ -820,16 +828,32 @@ $HOME/app-on-openstack/code/worker/deploy.py
         </section>
 
         <section>
+          <h2>Configure App Server Environment</h2>
+          <pre><code data-trim class="bash">
+source $HOME/api_lb_ip.rc
+
+cat &lt;&lt;EOF &gt;&gt; $HOME/worker_env.rc
+export GITHUB_USERNAME=$GITHUB_USERNAME
+export WM_API_SCHEME=http
+export WM_API_ENDPOINT=$WM_API_LB_IP
+export WM_CONFIG_ENV=unix
+EOF
+          </code></pre>
+        </section>
+
+        <section>
           <h2>Create Worker Servers</h2>
           <pre><code data-trim class="bash">
 openstack server create \
   --image "$IMAGE_NAME" \
   --flavor $FLAVOR_ID \
-  --key-name qcon \
+  --key-name $OS_USERNAME-qcon \
   --user-data $HOME/app-on-openstack/code/worker/deploy.sh \
   --config-drive true \
   --file /root/os_env.rc=$HOME/os_env.rc \
-  worker
+  --file /root/worker_env.rc=$HOME/worker_env.rc \
+  $OS_USERNAME-worker
+
 !!
           </code></pre>
           <p><span style="font-style: italic;">Note: Hostname "worker"</span></p>
@@ -871,11 +895,12 @@ EOF
 openstack server create \
   --image "$IMAGE_NAME" \
   --flavor $FLAVOR_ID \
-  --key-name qcon \
+  --key-name $OS_USERNAME-qcon \
   --user-data $HOME/app-on-openstack/code/app/deploy.sh \
   --config-drive true \
   --file /root/app_env.rc=$HOME/app_env.rc \
-  app
+  $OS_USERNAME-app
+
 !!
           </code></pre>
           <p><span style="font-style: italic;">Note: Hostname "app"</span></p>
@@ -887,7 +912,7 @@ openstack server create \
 cat &lt;&lt;EOF &gt;&gt; $HOME/app_ips.rc
 export WM_IPS=(
 $(openstack server list --format json | \
-  jq -r '.[] | select(.Name == "app").Networks' | \
+  jq -r '.[] | select(.Name == "'"$OS_USERNAME-app"'").Networks' | \
   sed "s/.*private=\(.*\)/\1/")
 )
 EOF
@@ -900,11 +925,11 @@ EOF
 openstack server create \
   --image "$IMAGE_NAME" \
   --flavor $FLAVOR_ID \
-  --key-name qcon \
+  --key-name $OS_USERNAME-qcon \
   --user-data $HOME/app-on-openstack/code/lb/deploy.sh \
   --config-drive true \
   --file /root/ips.rc=$HOME/app_ips.rc \
-  app-lb
+  $OS_USERNAME-app-lb
           </code></pre>
           <p><span style="font-style: italic;">Note: Hostname "app-lb"</span></p>
         </section>
@@ -917,7 +942,7 @@ openstack server create \
           <h2>Test the API</h2>
           <pre><code data-trim class="bash">
 openstack server list
-curl my.api.lb.server
+curl my.app.lb.server
           </code></pre>
           <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
         </section>
@@ -955,6 +980,12 @@ curl my.api.lb.server
             <li><a href="#/qcon-key">Generate your own SSH keys</a></li>
             <li>GitHub deploy SSH keys</li>
             <li>Networks (Neutron)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Next Next</h2>
+          <ul>
             <li>SSL (<a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>)</li>
             <li>Service discovery</li>
             <li>DNS</li>
@@ -963,6 +994,8 @@ curl my.api.lb.server
             <li>CI/CD</li>
           </ul>
         </section>
+
+
 
 
         <section id="thanks">
@@ -983,7 +1016,11 @@ curl my.api.lb.server
           </center>
         </section>
 
-        <section id="devplus">
+        <section id="security-advice">
+          <a href="http://everett-toews.github.io/rackspace-developer-doubleplusgood/presentation/#/secure" target="_blank">Security Advice</a>
+        </section>
+
+        <section id="devplus-advice">
           <h1>developer+ Advice</h1>
         </section>
 
