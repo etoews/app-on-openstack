@@ -4,6 +4,7 @@ apt-get -y -qq update; apt-get -y -qq upgrade
 apt-get -y -qq install python3-dev python-pip git
 
 echo "source /root/os_env.rc" >> /root/.profile
+echo "source /root/worker_env.rc" >> /root/.profile
 source /root/.profile
 
 git clone https://github.com/$GITHUB_USERNAME/app-on-openstack.git /root/app-on-openstack
