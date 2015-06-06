@@ -1,2 +1,2 @@
 # Python 3.4
-git+https://github.com/stackforge/python-openstacksdk.git@9c2b15247e525f448692d10272176c4be728073f#egg=python-openstacksdk
+git+https://github.com/stackforge/python-openstacksdk.git@d672f7e239562acf69d8b0436790273209a62bc7#egg=python-openstacksdk

@@ -1,4 +1,5 @@
 import asyncio
+import tempfile
 import uuid
 
 from openstack import exceptions
@@ -7,8 +8,15 @@ from openstack.message.v1 import claim
 import connect
 
 @asyncio.coroutine
-def watermark(message):
+def watermark(conn, message):
     print('Watermark image %s' % message)
+    href = message.body['href']
+
+    with tempfile.TemporaryFile() as f:
+        download = conn.object_store.get_object(href, connect.NAME)
+        f.write(download)
+        f.flush()
+
 
 @asyncio.coroutine
 def worker():
@@ -20,10 +28,10 @@ def worker():
 
         try:
             messages = conn.message.claim_messages(claim.Claim.new(
-                client=client, queue=connect.QUEUE, ttl=300, grace=150))
+                client=client, queue=connect.NAME, ttl=300, grace=150))
 
             for message in messages:
-                yield from watermark(message)
+                yield from watermark(conn, message)
                 conn.message.delete_message(message)
 
         except exceptions.InvalidResponse as e:

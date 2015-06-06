@@ -13,7 +13,9 @@ from openstack.message.v1 import queue
 
 requests.packages.urllib3.disable_warnings()
 
-QUEUE = 'watermark'
+NAME = "{username}-{queue}".format(
+    username=os.getenv('OS_USERNAME'),
+    queue='watermark')
 
 def get_connection():
     prof = profile.Profile()
