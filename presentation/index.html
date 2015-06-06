@@ -823,10 +823,15 @@ openstack container create $OS_USERNAME-watermark
           </code></pre>
         </section>
 
-        <section>
+        <section id="container-public">
           <h2>Make a Container Public</h2>
           <pre><code data-trim class="bash">
 TEMP_URL_KEY=qksfd84iua4KN084oniur34aoungINUIU
+
+TOKEN=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
+  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", "password":"'"$OS_PASSWORD"'"}}}' \
+  -H "Content-type: application/json" |
+  jq -r .access.token.id`
 
 CF_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
   -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
