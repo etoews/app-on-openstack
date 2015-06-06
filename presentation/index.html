@@ -555,18 +555,6 @@ git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
 
 
 
-        <section id="object-storage">
-          <h1>Object Storage</h1>
-        </section>
-
-        <section>
-          <img class="stretch" src="img/app-arch-object-storage.jpg">
-          <p><span style="font-style: italic;">Note: Stateful</span></p>
-        </section>
-
-
-
-
         <section id="database">
           <h1>Database</h1>
         </section>
@@ -818,6 +806,53 @@ $HOME/app-on-openstack/code/worker/deploy.py
 
 
 
+        <section id="object-storage">
+          <h1>Object Storage</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-object-storage.jpg">
+          <p><span style="font-style: italic;">Note: Stateful</span></p>
+        </section>
+
+        <section>
+          <h2>Create a Container</h2>
+          <pre><code data-trim class="bash">
+workon osc
+openstack container create $OS_USERNAME-watermark
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Make a Container Public</h2>
+          <pre><code data-trim class="bash">
+TEMP_URL_KEY=qksfd84iua4KN084oniur34aoungINUIU
+
+CF_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
+  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
+                                        "password":"'"$OS_PASSWORD"'"}}}' \
+  -H "Content-type: application/json" | \
+  jq -r '.access.serviceCatalog[] | select(.name == "cloudFiles").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
+
+curl -s -X POST $CF_ENDPOINT \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "X-Account-Meta-Temp-Url-Key: $TEMP_URL_KEY"
+
+CF_CDN_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
+  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
+                                        "password":"'"$OS_PASSWORD"'"}}}' \
+  -H "Content-type: application/json" | \
+  jq -r '.access.serviceCatalog[] | select(.name == "cloudFilesCDN").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
+
+echo "export CF_CDN_ENDPOINT=$CDN_URL" >> $HOME/worker_env.rc
+echo "export TEMP_URL_KEY=$TEMP_URL_KEY" >> $HOME/worker_env.rc
+          </code></pre>
+          <p><span style="font-style: italic;">Note: Here you would use <a href="http://developer.openstack.org/api-ref-objectstorage-v1.html#updateContainerMeta" target="_blank">Swift's Container Read</a></span></p>
+        </section>
+
+
+
+
         <section id="workers">
           <h1>Workers</h1>
         </section>
@@ -828,7 +863,7 @@ $HOME/app-on-openstack/code/worker/deploy.py
         </section>
 
         <section>
-          <h2>Configure App Server Environment</h2>
+          <h2>Configure Worker Server Environment</h2>
           <pre><code data-trim class="bash">
 source $HOME/api_lb_ip.rc
 
