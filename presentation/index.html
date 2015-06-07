@@ -81,7 +81,7 @@
             <li><a href="#/application">Application</a></li>
             <li><a href="#/architecture">Architecture</a></li>
             <li><a href="#/workers">Workers</a></li>
-            <li><a href="#/db">Database</a></li>
+            <li><a href="#/database">Database</a></li>
             <li><a href="#/api">API</a></li>
             <li><a href="#/app">App</a></li>
             <li><a href="#/run">Run</a></li>
@@ -697,6 +697,7 @@ openstack server create \
   --config-drive true \
   --file /root/db_env.rc=$HOME/db_env.rc \
   --file /root/api_env.rc=$HOME/api_env.rc \
+  --file /root/os_env.rc=$HOME/os_env.rc \
   $OS_USERNAME-api
 
 !!
@@ -823,9 +824,10 @@ openstack container create $OS_USERNAME-watermark
           </code></pre>
         </section>
 
-        <section id="container-public">
-          <h2>Make a Container Public</h2>
+        <section id="container-public-1">
+          <h2>Make a Container Public: Part 1</h2>
           <pre><code data-trim class="bash">
+# Some long random string
 TEMP_URL_KEY=qksfd84iua4KN084oniur34aoungINUIU
 
 TOKEN=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
@@ -833,24 +835,44 @@ TOKEN=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
   -H "Content-type: application/json" |
   jq -r .access.token.id`
 
-CF_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
+SWIFT_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
   -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
                                         "password":"'"$OS_PASSWORD"'"}}}' \
   -H "Content-type: application/json" | \
   jq -r '.access.serviceCatalog[] | select(.name == "cloudFiles").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
 
-curl -s -X POST $CF_ENDPOINT \
+curl -s -X POST $SWIFT_ENDPOINT \
   -H "X-Auth-Token: $TOKEN" \
   -H "X-Account-Meta-Temp-Url-Key: $TEMP_URL_KEY"
 
+curl -s -X POST $SWIFT_ENDPOINT/$OS_USERNAME-watermark \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "X-Account-Meta-Temp-Url-Key: $TEMP_URL_KEY"
+
+echo "export CONTAINER_URL=$SWIFT_ENDPOINT/$OS_USERNAME-watermark" >> $HOME/app_env.rc
+echo "export TEMP_URL_KEY=$TEMP_URL_KEY" >> $HOME/app_env.rc
+        </code></pre>
+        <p><span style="font-style: italic;">Note: For <a href="http://docs.openstack.org/kilo/config-reference/content/object-storage-form-post.html" target="_blank">Swift's FormPost</a></span></p>
+      </section>
+
+
+  <section id="container-public-2">
+    <h2>Make a Container Public: Part 2</h2>
+    <pre><code data-trim class="bash">
 CF_CDN_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
   -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
                                         "password":"'"$OS_PASSWORD"'"}}}' \
   -H "Content-type: application/json" | \
   jq -r '.access.serviceCatalog[] | select(.name == "cloudFilesCDN").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
 
-echo "export CF_CDN_ENDPOINT=$CDN_URL" >> $HOME/worker_env.rc
-echo "export TEMP_URL_KEY=$TEMP_URL_KEY" >> $HOME/worker_env.rc
+CONTAINER_CDN_URL=`curl -s -i -X PUT $CF_CDN_ENDPOINT/$OS_USERNAME-watermark \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "X-Cdn-Enabled: True" |\
+  grep X-Cdn-Uri | \
+  awk '{print $2}'`
+
+echo "export CF_CDN_ENDPOINT=$CF_CDN_ENDPOINT" >> $HOME/worker_env.rc
+echo "export CONTAINER_CDN_URL=$CONTAINER_CDN_URL" >> $HOME/worker_env.rc
           </code></pre>
           <p><span style="font-style: italic;">Note: Here you would use <a href="http://developer.openstack.org/api-ref-objectstorage-v1.html#updateContainerMeta" target="_blank">Swift's Container Read</a></span></p>
         </section>

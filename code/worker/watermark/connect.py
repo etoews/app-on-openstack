@@ -17,6 +17,11 @@ NAME = "{username}-{queue}".format(
     username=os.getenv('OS_USERNAME'),
     queue='watermark')
 
+API_URL = '{scheme}://{endpoint}'.format(
+    scheme=os.getenv('WM_API_SCHEME'),
+    endpoint=os.getenv('WM_API_ENDPOINT')
+)
+
 def get_connection():
     prof = profile.Profile()
     prof.set_region(prof.ALL, os.getenv('OS_REGION_NAME'))

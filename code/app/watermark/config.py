@@ -4,6 +4,10 @@ import os
 class Config:
     API_SCHEME = os.getenv('WM_API_SCHEME')
     API_ENDPOINT = os.getenv('WM_API_ENDPOINT')
+    API_URL = '{scheme}://{endpoint}'.format(
+        scheme=API_SCHEME,
+        endpoint=API_ENDPOINT
+    )
 
     @classmethod
     def init_app(cls, app):

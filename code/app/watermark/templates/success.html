@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Watermark{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h2>Success!</h2>
+    <p>Your image is being processed. Head <a href="/">home</a> to see if it's done.</p>
+    <p id="result"></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    $(document).ready(function() {
+        var filename = sessionStorage.getItem("filename");
+        $.post("{{ api_url }}", {href: filename});
+    });
+</script>
+{% endblock %}

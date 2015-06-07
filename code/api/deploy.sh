@@ -5,6 +5,7 @@ apt-get -y -qq install python-pip git nginx
 
 echo "source /root/api_env.rc" >> /root/.profile
 echo "source /root/db_env.rc" >> /root/.profile
+echo "source /root/os_env.rc" >> /root/.profile
 source /root/.profile
 
 git clone https://github.com/$GITHUB_USERNAME/app-on-openstack.git /root/app-on-openstack

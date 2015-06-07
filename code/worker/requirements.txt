@@ -1,2 +1,4 @@
 # Python 3.4
 git+https://github.com/stackforge/python-openstacksdk.git@d672f7e239562acf69d8b0436790273209a62bc7#egg=python-openstacksdk
+pillow
+requests
