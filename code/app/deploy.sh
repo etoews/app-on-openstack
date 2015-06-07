@@ -6,7 +6,7 @@ apt-get -y -qq install python-pip git nginx
 echo "source /root/app_env.rc" >> /root/.profile
 source /root/.profile
 
-git clone https://github.com/$GITHUB_USERNAME/app-on-openstack.git /root/app-on-openstack
+git clone https://github.com/everett-toews/app-on-openstack.git /root/app-on-openstack
 pip install virtualenv
 virtualenv /root/app-venv
 source /root/app-venv/bin/activate

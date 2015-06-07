@@ -494,50 +494,10 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
 
         <section id="application">
           <h1>The Application</h1>
-          <p>Describe the application.</p>
         </section>
 
-        <section>
-          <h2>SSH Key for GitHub</h2>
-          <p><a href="https://help.github.com/articles/generating-ssh-keys/#platform-linux" target="_blank">Generating SSH keys</a></p>
-          <ul>
-            <li>Step 2:</li>
-            <ul>
-              <li>File: /root/.ssh/id_rsa.qcon_github</li>
-              <li>Passphrase: &lt;empty&gt;</li>
-            </ul>
-            <li>Step 3 (do this instead):</li>
-              <pre><code data-trim class="bash">
-TAB="$(printf '\t')"
-
-cat &lt;&lt;EOF &gt;&gt; $HOME/.ssh/config
-Host github.com
-${TAB}IdentityFile $HOME/.ssh/id_rsa.qcon_github
-EOF
-              </code></pre>
-            <li>Step 4:</li>
-            <ul>
-              <li>Skip xclip</li>
-              <li><code data-trim class="bash">more $HOME/.ssh/id_rsa.qcon_github.pub</code></li>
-            </ul>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Fork</h2>
-          <ol>
-            <li><a href="https://github.com/everett-toews/app-on-openstack" target="_blank">app-on-openstack</a></li>
-            <li>Fork</li>
-          </ol>
-        </section>
-
-        <section>
-          <h2>Clone</h2>
-          <pre><code data-trim class="bash">
-echo "export GITHUB_USERNAME=my-github-useranme" >> $HOME/.profile
-source $HOME/.profile
-git clone git@github.com:$GITHUB_USERNAME/app-on-openstack.git
-          </code></pre>
+        <section id="application">
+          <h1>Watermark</h1>
         </section>
 
 
@@ -680,7 +640,6 @@ echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
           <h2>Configure API Server Environment</h2>
           <pre><code data-trim class="bash">
 cat &lt;&lt;EOF &gt;&gt; $HOME/api_env.rc
-export GITHUB_USERNAME=$GITHUB_USERNAME
 export WM_CONFIG_ENV=unix
 EOF
           </code></pre>
@@ -832,7 +791,7 @@ TEMP_URL_KEY=qksfd84iua4KN084oniur34aoungINUIU
 
 TOKEN=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
   -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", "password":"'"$OS_PASSWORD"'"}}}' \
-  -H "Content-type: application/json" |
+  -H "Content-type: application/json" | \
   jq -r .access.token.id`
 
 SWIFT_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
@@ -849,7 +808,7 @@ curl -s -X POST $SWIFT_ENDPOINT/$OS_USERNAME-watermark \
   -H "X-Auth-Token: $TOKEN" \
   -H "X-Account-Meta-Temp-Url-Key: $TEMP_URL_KEY"
 
-echo "export CONTAINER_URL=$SWIFT_ENDPOINT/$OS_USERNAME-watermark" >> $HOME/app_env.rc
+echo "export WM_CONTAINER_URL=$SWIFT_ENDPOINT/$OS_USERNAME-watermark" >> $HOME/app_env.rc
 echo "export TEMP_URL_KEY=$TEMP_URL_KEY" >> $HOME/app_env.rc
         </code></pre>
         <p><span style="font-style: italic;">Note: For <a href="http://docs.openstack.org/kilo/config-reference/content/object-storage-form-post.html" target="_blank">Swift's FormPost</a></span></p>
@@ -865,14 +824,14 @@ CF_CDN_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/to
   -H "Content-type: application/json" | \
   jq -r '.access.serviceCatalog[] | select(.name == "cloudFilesCDN").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
 
-CONTAINER_CDN_URL=`curl -s -i -X PUT $CF_CDN_ENDPOINT/$OS_USERNAME-watermark \
+WM_CONTAINER_CDN_URL=`curl -s -i -X PUT $CF_CDN_ENDPOINT/$OS_USERNAME-watermark \
   -H "X-Auth-Token: $TOKEN" \
   -H "X-Cdn-Enabled: True" |\
   grep X-Cdn-Uri | \
   awk '{print $2}'`
 
 echo "export CF_CDN_ENDPOINT=$CF_CDN_ENDPOINT" >> $HOME/worker_env.rc
-echo "export CONTAINER_CDN_URL=$CONTAINER_CDN_URL" >> $HOME/worker_env.rc
+echo "export WM_CONTAINER_CDN_URL=$WM_CONTAINER_CDN_URL" >> $HOME/worker_env.rc
           </code></pre>
           <p><span style="font-style: italic;">Note: Here you would use <a href="http://developer.openstack.org/api-ref-objectstorage-v1.html#updateContainerMeta" target="_blank">Swift's Container Read</a></span></p>
         </section>
@@ -895,7 +854,6 @@ echo "export CONTAINER_CDN_URL=$CONTAINER_CDN_URL" >> $HOME/worker_env.rc
 source $HOME/api_lb_ip.rc
 
 cat &lt;&lt;EOF &gt;&gt; $HOME/worker_env.rc
-export GITHUB_USERNAME=$GITHUB_USERNAME
 export WM_API_SCHEME=http
 export WM_API_ENDPOINT=$WM_API_LB_IP
 export WM_CONFIG_ENV=unix
@@ -943,7 +901,6 @@ openstack server create \
 source $HOME/api_lb_ip.rc
 
 cat &lt;&lt;EOF &gt;&gt; $HOME/app_env.rc
-export GITHUB_USERNAME=$GITHUB_USERNAME
 export WM_API_SCHEME=http
 export WM_API_ENDPOINT=$WM_API_LB_IP
 export WM_CONFIG_ENV=unix
