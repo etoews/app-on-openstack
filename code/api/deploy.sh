@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 apt-get -y -qq update; apt-get -y -qq upgrade
-apt-get -y -qq install python-pip git nginx
+apt-get -y -qq install python-dev python-pip git nginx
 
 echo "source /root/api_env.rc" >> /root/.profile
 echo "source /root/db_env.rc" >> /root/.profile
