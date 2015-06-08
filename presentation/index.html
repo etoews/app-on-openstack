@@ -552,7 +552,7 @@ git clone https://github.com/everett-toews/app-on-openstack.git
 
         <section>
           <h1>Cloud Databases</h1>
-          <h2>(Trove) MySQL</h2>
+          <h2>(Trove)</h2>
           <h2>MySQL</h2>
         </section>
 
@@ -839,6 +839,11 @@ openstack server create \
         </section>
 
         <section>
+          <img class="stretch" src="img/app-arch-api-lb.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
+        </section>
+
+        <section>
           <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/lb/deploy.sh" target="_blank">deploy.sh</a></h2>
         </section>
 
@@ -1031,6 +1036,11 @@ openstack server create \
         </section>
 
         <section>
+          <img class="stretch" src="img/app-arch-app-lb.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
+        </section>
+
+        <section>
           <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/lb/deploy.sh" target="_blank">deploy.sh</a></h2>
         </section>
 
@@ -1051,6 +1061,11 @@ curl my.app.lb.server
         </section>
 
         <section>
+          <img class="stretch" src="img/app-arch-run.jpg">
+          <p><span style="font-style: italic;">Note: Stateful</span></p>
+        </section>
+
+        <section>
           <img class="stretch" src="img/watermark.png">
         </section>
 
@@ -1060,7 +1075,6 @@ curl my.app.lb.server
 
         <section>
           <img class="stretch" src="img/app-arch.jpg">
-          <p><span style="font-style: italic;">Note: Stateless</span></p>
         </section>
 
 
@@ -1078,21 +1092,22 @@ curl my.app.lb.server
         </section>
 
         <section>
-          <h2>Next</h2>
+          <h2>Next Next</h2>
           <ul>
-            <li>DB Cluster (easy!)</li>
+            <li><a href="http://docs.openstack.org/kilo/config-reference/content/object-storage-form-post.html" target="_blank">FormPost</a></li>
+            <li>DB Cluster</li>
             <li>More grindstone</li>
             <li>More security</li>
             <li>Don't run as root :(</li>
             <li><a href="#/qcon-key">Generate your own SSH keys</a></li>
             <li>GitHub deploy SSH keys</li>
-            <li>Networks (Neutron)</li>
           </ul>
         </section>
 
         <section>
-          <h2>Next Next</h2>
+          <h2>Next Next Next</h2>
           <ul>
+            <li>Networks (Neutron)</li>
             <li>SSL (<a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>)</li>
             <li>Service discovery</li>
             <li>DNS</li>
