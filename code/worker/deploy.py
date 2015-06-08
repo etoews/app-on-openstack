@@ -2,7 +2,7 @@
 
 import os
 
-from watermark import config as conf
+from watermark.config import config as conf
 from watermark import connect
 
 config_name = os.getenv('WM_CONFIG_ENV') or 'default'
