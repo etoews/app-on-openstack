@@ -46,6 +46,8 @@ class Config:
         file_handler.setFormatter(formatter)
         wm_logger.addHandler(file_handler)
 
+        wm_logger.debug("API ready")
+
 
 
 class DevelopmentConfig(Config):
