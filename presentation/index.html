@@ -418,7 +418,7 @@ source $HOME/.profile
         <section>
           <h2>Configure Environment</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/os_env.rc
+cat &lt;&lt;EOF &gt; $HOME/os_env.rc
 export OS_AUTH_URL=https://identity.api.rackspacecloud.com/v2.0/
 export OS_REGION_NAME=IAD
 export OS_USERNAME=my-username
@@ -430,6 +430,7 @@ echo "source $HOME/os_env.rc" >> $HOME/.profile
 source $HOME/.profile
 env | grep OS_
           </code></pre>
+          <p><span style="font-style: italic;">Note: Watch out for &amp;s in the password.</span></p>
         </section>
 
         <section>
@@ -466,6 +467,10 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
 
         <section>
           <h1>Salt</h1>
+        </section>
+
+        <section>
+          <h1>Terraform</h1>
         </section>
 
         <section>
@@ -546,7 +551,8 @@ git clone https://github.com/everett-toews/app-on-openstack.git
         </section>
 
         <section>
-          <h1>Databases</h1>
+          <h1>Cloud Databases</h1>
+          <h2>(Trove) MySQL</h2>
           <h2>MySQL</h2>
         </section>
 
@@ -586,7 +592,7 @@ trove create \
   --datastore MySQL \
   $OS_USERNAME-watermark 2
 
-trove list 2>/dev/null
+trove list 2>/dev/null | grep $OS_USERNAME
 trove --json list 2>/dev/null | jq .
 
 export WM_DB_HOSTNAME=$(trove --json list 2>/dev/null | \
@@ -598,7 +604,7 @@ echo $WM_DB_HOSTNAME
         <section>
           <h2>Configure DB Server Environment</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/db_env.rc
+cat &lt;&lt;EOF &gt; $HOME/db_env.rc
 export WM_DB_ENGINE_DRIVER=mysql+pymysql
 export WM_DB_USERNAME=wmadmin
 export WM_DB_PASSWORD=password
@@ -626,6 +632,11 @@ python $HOME/app-on-openstack/code/api/manage.py create_all
 
         <section id="object-storage">
           <h1>Object Storage</h1>
+        </section>
+
+        <section>
+          <h1>Cloud Files</h1>
+          <h2>(Swift)</h2>
         </section>
 
         <section>
@@ -676,6 +687,11 @@ more $HOME/api_env.rc
         </section>
 
         <section>
+          <h1>Cloud Queues</h1>
+          <h2>(Zaqar)</h2>
+        </section>
+
+        <section>
           <img class="stretch" src="img/app-arch-queues.jpg">
           <p><span style="font-style: italic;">Note: Stateful ("temporarily")</span></p>
         </section>
@@ -702,12 +718,13 @@ $HOME/app-on-openstack/code/worker/deploy.py
         </section>
 
         <section>
-          <img class="stretch" src="img/app-arch-api.jpg">
-          <p><span style="font-style: italic;">Note: Stateless</span></p>
+          <h1>Cloud Servers</h1>
+          <h2>(Nova)</h2>
         </section>
 
         <section>
-          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/api/requirements.txt" target="_blank">requirements.txt</a></h2>
+          <img class="stretch" src="img/app-arch-api.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
         </section>
 
         <section>
@@ -738,6 +755,8 @@ echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
 cat &lt;&lt;EOF &gt;&gt; $HOME/api_env.rc
 export WM_CONFIG_ENV=testing
 EOF
+
+more $HOME/api_env.rc
           </code></pre>
         </section>
 
@@ -761,6 +780,7 @@ openstack server create \
         </section>
 
         <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/api/requirements.txt" target="_blank">requirements.txt</a></h2>
           <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/api/deploy.sh" target="_blank">deploy.sh</a></h2>
         </section>
 
@@ -776,7 +796,7 @@ openstack server list --format json | \
   jq -r '.[] | select(.Name == "'"$OS_USERNAME-api"'").Networks' | \
   sed "s/.*private=\(.*\)/\1/"
 
-cat &lt;&lt;EOF &gt;&gt; $HOME/api_ips.rc
+cat &lt;&lt;EOF &gt; $HOME/api_ips.rc
 export WM_IPS=(
 $(openstack server list --format json | \
   jq -r '.[] | select(.Name == "'"$OS_USERNAME-api"'").Networks' | \
@@ -789,11 +809,17 @@ more $HOME/api_ips.rc
         </section>
 
         <section>
-          <h2>Login to any API Server</h2>
+          <h2>Check any API Server</h2>
           <pre><code data-trim class="bash">
 ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.api.server.ip
+
 tail -f /var/log/cloud-init-output.log
 tail -f /var/log/syslog
+more $HOME/app-on-openstack/code/api/wm_api.log
+
+exit
+
+curl any.api.server.ip
           </code></pre>
         </section>
 
@@ -846,6 +872,11 @@ curl $WM_API_LB_IP
         </section>
 
         <section>
+          <h1>Cloud Servers</h1>
+          <h2>(Nova)</h2>
+        </section>
+
+        <section>
           <img class="stretch" src="img/app-arch-workers.jpg">
           <p><span style="font-style: italic;">Note: Stateless</span></p>
         </section>
@@ -881,6 +912,24 @@ openstack server create \
           <p><span style="font-style: italic;">Note: Hostname "worker"</span></p>
         </section>
 
+        <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/worker/requirements.txt" target="_blank">requirements.txt</a></h2>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/worker/deploy.sh" target="_blank">deploy.sh</a></h2>
+        </section>
+
+        <section>
+          <h2>Check any Worker Server</h2>
+          <pre><code data-trim class="bash">
+ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.worker.server.ip
+
+tail -f /var/log/cloud-init-output.log
+tail -f /var/log/syslog
+more $HOME/app-on-openstack/code/worker/wm_worker.log
+
+exit
+          </code></pre>
+        </section>
+
 
 
 
@@ -889,12 +938,13 @@ openstack server create \
         </section>
 
         <section>
-          <img class="stretch" src="img/app-arch-app.jpg">
-          <p><span style="font-style: italic;">Note: Stateless</span></p>
+          <h1>Cloud Servers</h1>
+          <h2>(Nova)</h2>
         </section>
 
         <section>
-          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/app/requirements.txt" target="_blank">requirements.txt</a></h2>
+          <img class="stretch" src="img/app-arch-app.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
         </section>
 
         <section>
@@ -931,6 +981,11 @@ openstack server create \
         </section>
 
         <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/app/requirements.txt" target="_blank">requirements.txt</a></h2>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/app/deploy.sh" target="_blank">deploy.sh</a></h2>
+        </section>
+
+        <section>
           <h2>Capture App Server IPs</h2>
           <pre><code data-trim class="bash">
 cat &lt;&lt;EOF &gt; $HOME/app_ips.rc
@@ -942,6 +997,21 @@ $(openstack server list --format json | \
 EOF
 
 more $HOME/app_ips.rc
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Check any App Server</h2>
+          <pre><code data-trim class="bash">
+ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.app.server.ip
+
+tail -f /var/log/cloud-init-output.log
+tail -f /var/log/syslog
+more $HOME/app-on-openstack/code/app/wm_app.log
+
+exit
+
+curl any.app.server.ip
           </code></pre>
         </section>
 
@@ -965,7 +1035,7 @@ openstack server create \
         </section>
 
         <section>
-          <h2>Test the API</h2>
+          <h2>Test the App</h2>
           <pre><code data-trim class="bash">
 openstack server list | grep $OS_USERNAME
 curl my.app.lb.server
@@ -986,6 +1056,11 @@ curl my.app.lb.server
 
         <section>
           <h1>Upload</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch.jpg">
+          <p><span style="font-style: italic;">Note: Stateless</span></p>
         </section>
 
 
