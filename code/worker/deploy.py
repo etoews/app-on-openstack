@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 
+import os
+
+from watermark import config as conf
 from watermark import connect
 
-conn = connect.get_connection()
-conn.message.create_queue(name=connect.NAME)
+config_name = os.getenv('WM_CONFIG_ENV') or 'default'
+config = conf[config_name]()
 
-print("{name} queue created".format(name=connect.NAME))
+conn = connect.get_connection(config)
+conn.message.create_queue(name=config.NAME)
+
+print("{name} queue created".format(name=config.NAME))
