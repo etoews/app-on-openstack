@@ -15,4 +15,4 @@ class Image(db.Model):
         return json
 
     def __repr__(self):
-        return '<Image %r>' % self.url
+        return '<Image %r>' % self.href

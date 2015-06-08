@@ -3,27 +3,13 @@
 {% block title %}Upload{% endblock %}
 
 {% block page_content %}
-<p>Upload an image to be watermarked</p>
-<form id="upload" action="https://storage101.iad3.clouddrive.com/v1/MossoCloudFS_5bcf396e-39dd-45ff-93a1-712b9aba90a9/everett4drg-watermark" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="redirect" value="{{ redirect }}" />
-    <input type="hidden" name="max_file_size" value="{{ max_file_size }}" />
-    <input type="hidden" name="max_file_count" value="{{ max_file_count }}" />
-    <input type="hidden" name="expires" value="{{ expires }}" />
-    <input type="hidden" name="signature" value="{{ signature }}" />
-    <input type="file" name="file1" /><br />
-    <input type="submit" />
-</form>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script>
-    $(document).ready(function() {
-        $( "#upload" ).submit(function( event ) {
-            var filename = $('input[type=file]').val().split('\\').pop();
-            sessionStorage.setItem("filename", filename);
-            return
-        });
-    });
-</script>
+<div class="page-header">
+    <div class="row">
+        <p>Upload an image to be watermarked</p>
+        <form action="upload" method=post enctype=multipart/form-data>
+            <input type=file name=file>
+            <input type=submit value=Upload>
+        </form>
+    </div>
+</div>
 {% endblock %}

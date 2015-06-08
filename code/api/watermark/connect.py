@@ -13,7 +13,7 @@ requests.packages.urllib3.disable_warnings()
 
 def get_connection(config):
     prof = profile.Profile()
-    prof.set_region(prof.ALL, config.OS_REGION_NAME)
+    prof.set_region(prof.ALL, config['OS_REGION_NAME'])
 
     service = message_service.MessageService()
     service.service_type = 'rax:queues'
@@ -25,6 +25,6 @@ def get_connection(config):
 
     return connection.Connection(
         profile=prof,
-        auth_url=config.OS_AUTH_URL,
-        username=config.OS_USERNAME,
-        password=config.OS_PASSWORD)
+        auth_url=config['OS_AUTH_URL'],
+        username=config['OS_USERNAME'],
+        password=config['OS_PASSWORD'])

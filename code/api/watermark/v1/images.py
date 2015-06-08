@@ -1,29 +1,16 @@
-import json
-import os
-import uuid
+import logging
 
 from flask import current_app, jsonify, request, url_for
+import requests
+from openstack.message.v1 import message
 
+from ..connect import get_connection
 from ..models import Image, db
 from . import api
 
-import requests
-
-from openstack import connection
-from openstack import profile
-from openstack.message import message_service
-from openstack.message.v1 import claim
-from openstack.message.v1 import message
-from openstack.message.v1 import queue
-
 requests.packages.urllib3.disable_warnings()
 
-NAME = "{username}-{queue}".format(
-    username=os.getenv('OS_USERNAME'),
-    queue='watermark')
-client = str(uuid.uuid4())
-
-
+logger = logging.getLogger(__name__)
 
 @api.route('/images')
 def get_images():
@@ -32,6 +19,8 @@ def get_images():
         page, per_page=current_app.config['ITEMS_PER_PAGE'],
         error_out=False)
     images = pagination.items
+
+    logger.debug("Got images: %s" % images)
 
     prev = None
     if pagination.has_prev:
@@ -51,32 +40,23 @@ def get_images():
 @api.route('/images', methods=['POST'])
 def create_image():
     messages = [message.Message.new(
-        client=client, queue=NAME, ttl=600, body={'href': request.values['href']})]
-    get_connection().message.create_messages(messages)
+        client=current_app.config['CLIENT'], queue=current_app.config['NAME'],
+        ttl=600, body=request.json)]
+
+    get_connection(current_app.config).message.create_messages(messages)
+
+    logger.debug("Created image messages: %s" % messages[0])
 
     return '', 202
 
 @api.route('/images', methods=['PUT'])
 def update_image():
-    image = Image(href='http://43258d3051032895473e-0d4d705ac0975ecdda8f14599c5f4b64.r80.cf5.rackcdn.com/' + request.json['href'])
+    image = Image(href='{container}/{filename}'.format(
+        container=current_app.config['CONTAINER_CDN_URL'],
+        filename=request.json['filename']))
     db.session.add(image)
     db.session.commit()
+
+    logger.debug("Updated image: %s" % image)
+
     return '', 200
-
-def get_connection():
-    prof = profile.Profile()
-    prof.set_region(prof.ALL, os.getenv('OS_REGION_NAME'))
-
-    service = message_service.MessageService()
-    service.service_type = 'rax:queues'
-    service.service_name = 'cloudQueues'
-
-    claim.Claim.service = service
-    message.Message.service = service
-    queue.Queue.service = service
-
-    return connection.Connection(
-        profile=prof,
-        auth_url=os.getenv('OS_AUTH_URL'),
-        username=os.getenv('OS_USERNAME'),
-        password=os.getenv('OS_PASSWORD'))

@@ -4,8 +4,6 @@ from flask import Flask
 
 from .config import config
 from .models import db
-# from .auth import auth
-
 
 def create_app(config_name=None):
     app = Flask(__name__)
@@ -22,9 +20,5 @@ def create_app(config_name=None):
     @app.route('/')
     def index():
         return "Welcome to Watermark"
-
-    # if app.config['USE_TOKEN_AUTH']:
-    #     from api.token import token as token_blueprint
-    #     app.register_blueprint(token_blueprint, url_prefix='/auth')
 
     return app

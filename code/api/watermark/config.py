@@ -1,12 +1,19 @@
 import os
+import logging
+import sys
+import uuid
 
 
 class Config:
-    SECRET_KEY = os.environ.get('WM_SECRET_KEY') or 'hard to guess string'
-    SSL_DISABLE = False
+    CLIENT = str(uuid.uuid4())
+    NAME = "{username}-{queue}".format(
+        username=os.getenv('OS_USERNAME'),
+        queue='watermark')
 
-    ITEMS_PER_PAGE = 20
-    SLOW_DB_QUERY_TIME = 0.5
+    OS_REGION_NAME = os.getenv('OS_REGION_NAME')
+    OS_AUTH_URL = os.getenv('OS_AUTH_URL')
+    OS_USERNAME = os.getenv('OS_USERNAME')
+    OS_PASSWORD = os.getenv('OS_PASSWORD')
 
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_RECORD_QUERIES = True
@@ -19,9 +26,26 @@ class Config:
             hostname=os.getenv('WM_DB_HOSTNAME'),
             database=os.getenv('WM_DB_DATABASE'))
 
+    ITEMS_PER_PAGE = 20
+    SLOW_DB_QUERY_TIME = 0.5
+
+    CONTAINER_CDN_URL = os.getenv('WM_CONTAINER_CDN_URL')
+
     @classmethod
     def init_app(cls, app):
-        pass
+        wm_logger = logging.getLogger('watermark')
+        wm_logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            '%(asctime)s %(levelname)s: %(name)s %(message)s')
+
+        stdout = logging.StreamHandler(sys.stdout)
+        stdout.setFormatter(formatter)
+        wm_logger.addHandler(stdout)
+
+        file_handler = logging.FileHandler('wm_api.log')
+        file_handler.setFormatter(formatter)
+        wm_logger.addHandler(file_handler)
+
 
 
 class DevelopmentConfig(Config):
@@ -39,14 +63,6 @@ class ProductionConfig(Config):
     def init_app(cls, app):
         Config.init_app(app)
 
-
-class UnixConfig(ProductionConfig):
-    @classmethod
-    def init_app(cls, app):
-        ProductionConfig.init_app(app)
-
-        # log to syslog
-        import logging
         from logging.handlers import SysLogHandler
         syslog_handler = SysLogHandler()
         syslog_handler.setLevel(logging.WARNING)
@@ -57,7 +73,6 @@ config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
     'production': ProductionConfig,
-    'unix': UnixConfig,
 
     'default': DevelopmentConfig
 }
