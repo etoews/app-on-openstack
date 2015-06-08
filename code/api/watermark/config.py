@@ -42,7 +42,7 @@ class Config:
         stdout.setFormatter(formatter)
         wm_logger.addHandler(stdout)
 
-        file_handler = logging.FileHandler('/root/wm_api.log')
+        file_handler = logging.FileHandler('wm_api.log')
         file_handler.setFormatter(formatter)
         wm_logger.addHandler(file_handler)
 
