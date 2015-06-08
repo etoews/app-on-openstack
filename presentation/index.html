@@ -60,34 +60,48 @@
 
         <section id="goal">
           <h1>Goal</h1>
-          <p>To give you the foundation of building and deploying an application on OpenStack and to give you the confidence to use tools at a higher level of abstraction in the future.
+          <p>To give you the foundation of building and deploying an application on OpenStack and to give you the confidence to use tools of a higher level of abstraction in the future.
         </section>
 
         <section>
-          <h1>Agenda</h1>
-          <ol>
-            <li><a href="#/cloud">The Cloud</a></li>
-            <li><a href="#/openstack">OpenStack</a></li>
-            <li><a href="#/access">Access</a></li>
-            <li><a href="#/control">Cloud Control</a></li>
-            <li><a href="#/deployment">Deployment</a></li>
-            <li><a href="#/break">Break</a></li>
-          </ol>
+          <span style="white-space: nowrap;">
+            <h1>Agenda</h1>
+            <ol>
+              <li><a href="#/cloud">The Cloud</a></li>
+              <li><a href="#/openstack">OpenStack</a></li>
+              <li><a href="#/access">Access</a></li>
+              <li><a href="#/control">Cloud Control</a></li>
+              <li><a href="#/deployment-1">Deployment</a></li>
+              <li><a href="#/break">Break</a></li>
+            </ol>
+          </span>
         </section>
 
         <section>
-          <h1>Agenda</h1>
-          <ol>
-            <li><a href="#/application">Application</a></li>
-            <li><a href="#/architecture">Architecture</a></li>
-            <li><a href="#/workers">Workers</a></li>
-            <li><a href="#/database">Database</a></li>
-            <li><a href="#/api">API</a></li>
-            <li><a href="#/app">App</a></li>
-            <li><a href="#/run">Run</a></li>
-            <li><a href="#/deployment-revisit">Deployment Revisited?</a></li>
-            <li><a href="#/next">Next</a></li>
-          </ol>
+          <span style="white-space: nowrap;">
+            <h1>Agenda</h1>
+            <ol>
+              <li><a href="#/application">Application</a></li>
+              <li><a href="#/architecture">Architecture</a></li>
+              <li><a href="#/database">Database</a></li>
+              <li><a href="#/object-storage">Object Storage</a></li>
+              <li><a href="#/queues">Queues</a></li>
+              <li><a href="#/api">API</a></li>
+            </ol>
+          </span>
+        </section>
+
+        <section>
+          <span style="white-space: nowrap;">
+            <h1>Agenda</h1>
+            <ol>
+              <li><a href="#/workers">Workers</a></li>
+              <li><a href="#/app">App</a></li>
+              <li><a href="#/run">Run</a></li>
+              <li><a href="#/deployment-2">Deployment</a></li>
+              <li><a href="#/next">Next</a></li>
+            </ol>
+          </span>
         </section>
 
         <section>
@@ -391,7 +405,7 @@ source $HOME/.profile
           <h2>Install OpenStack Client</h2>
           <pre><code data-trim class="bash">
 mkvirtualenv osc
-pip install python-openstackclient
+pip install python-openstackclient==1.3.0
 
 openstack --version
 openstack complete > .osc.bash_completion
@@ -441,7 +455,7 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
 
 
 
-        <section id="deployment">
+        <section id="deployment-1">
           <h1>Deployment</h1>
         </section>
 
@@ -500,6 +514,13 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
           <h1>Watermark</h1>
         </section>
 
+        <section>
+          <h2>Clone the Code</h2>
+          <pre><code data-trim class="bash">
+git clone https://github.com/everett-toews/app-on-openstack.git
+          </code></pre>
+        </section>
+
 
 
 
@@ -533,7 +554,8 @@ chmod 400 $HOME/.ssh/id_rsa.qcon_deploy
           <h2>Install Databases Client</h2>
           <pre><code data-trim class="bash">
 workon osc
-pip install python-troveclient
+
+pip install python-troveclient==1.2.0
 trove --version
           </code></pre>
         </section>
@@ -547,6 +569,7 @@ export TROVE_SERVICE_TYPE=rax:database
 EOF
 
 source $HOME/.profile
+more $HOME/os_env.rc
           </code></pre>
         </section>
 
@@ -601,6 +624,79 @@ python $HOME/app-on-openstack/code/api/manage.py create_all
 
 
 
+        <section id="object-storage">
+          <h1>Object Storage</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-object-storage.jpg">
+          <p><span style="font-style: italic;">Note: Stateful</span></p>
+        </section>
+
+        <section>
+          <h2>Create a Container</h2>
+          <pre><code data-trim class="bash">
+workon osc
+
+openstack container create $OS_USERNAME-watermark
+          </code></pre>
+        </section>
+
+        <section id="container-public">
+          <h2>Make a Container Public</h2>
+          <pre><code data-trim class="bash">
+TOKEN=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
+  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", "password":"'"$OS_PASSWORD"'"}}}' \
+  -H "Content-type: application/json" | \
+  jq -r .access.token.id`
+
+CF_CDN_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
+  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
+                                        "password":"'"$OS_PASSWORD"'"}}}' \
+  -H "Content-type: application/json" | \
+  jq -r '.access.serviceCatalog[] | select(.name == "cloudFilesCDN").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
+
+WM_CONTAINER_CDN_URL=`curl -s -i -X PUT $CF_CDN_ENDPOINT/$OS_USERNAME-watermark \
+  -H "X-Auth-Token: $TOKEN" \
+  -H "X-Cdn-Enabled: True" |\
+  grep X-Cdn-Uri | \
+  awk '{print $2}'`
+
+echo "export WM_CONTAINER_CDN_URL=$WM_CONTAINER_CDN_URL" >> $HOME/api_env.rc
+more $HOME/api_env.rc
+          </code></pre>
+          <p><span style="font-style: italic;">Note: Here you would use <a href="http://developer.openstack.org/api-ref-objectstorage-v1.html#updateContainerMeta" target="_blank">Swift's Container Read</a> instead</span></p>
+        </section>
+
+
+
+
+        <section id="queues">
+          <h1>Queues</h1>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/app-arch-queues.jpg">
+          <p><span style="font-style: italic;">Note: Stateful ("temporarily")</span></p>
+        </section>
+
+        <section>
+          <h2>Create Queue</h2>
+          <pre><code data-trim class="bash">
+mkvirtualenv worker
+
+pip install -r $HOME/app-on-openstack/code/worker/requirements.txt
+$HOME/app-on-openstack/code/worker/deploy.py
+          </code></pre>
+        </section>
+
+        <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/worker/deploy.py" target="_blank">deploy.py</a></h2>
+        </section>
+
+
+
+
         <section id="api">
           <h1>API</h1>
         </section>
@@ -640,7 +736,7 @@ echo "export FLAVOR_ID=$FLAVOR_ID" >> $HOME/.profile
           <h2>Configure API Server Environment</h2>
           <pre><code data-trim class="bash">
 cat &lt;&lt;EOF &gt;&gt; $HOME/api_env.rc
-export WM_CONFIG_ENV=unix
+export WM_CONFIG_ENV=testing
 EOF
           </code></pre>
         </section>
@@ -687,6 +783,8 @@ $(openstack server list --format json | \
   sed "s/.*private=\(.*\)/\1/")
 )
 EOF
+
+more $HOME/api_ips.rc
           </code></pre>
         </section>
 
@@ -721,119 +819,23 @@ openstack server create \
         <section>
           <h2>Capture API Load Balancer IP</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/api_lb_ip.rc
+cat &lt;&lt;EOF &gt; $HOME/api_lb_ip.rc
 export WM_API_LB_IP=$(openstack server list --format json | \
   jq -r '.[] | select(.Name == "'"$OS_USERNAME-api-lb"'").Networks' | \
   sed "s/.*private=\(.*\)/\1/")
 EOF
+
+source $HOME/api_lb_ip.rc
+more $HOME/api_lb_ip.rc
           </code></pre>
         </section>
 
         <section>
           <h2>Test the API</h2>
           <pre><code data-trim class="bash">
-openstack server list
-curl my.api.lb.server
+curl $WM_API_LB_IP
           </code></pre>
           <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
-        </section>
-
-
-
-
-        <section id="queues">
-          <h1>Queues</h1>
-        </section>
-
-        <section>
-          <img class="stretch" src="img/app-arch-queues.jpg">
-          <p><span style="font-style: italic;">Note: Stateful ("temporarily")</span></p>
-        </section>
-
-        <section>
-          <h2>Create Queue</h2>
-          <pre><code data-trim class="bash">
-workon osc
-pip install -r $HOME/app-on-openstack/code/worker/requirements.txt
-$HOME/app-on-openstack/code/worker/deploy.py
-          </code></pre>
-        </section>
-
-        <section>
-          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/worker/deploy.py" target="_blank">deploy.py</a></h2>
-        </section>
-
-
-
-
-        <section id="object-storage">
-          <h1>Object Storage</h1>
-        </section>
-
-        <section>
-          <img class="stretch" src="img/app-arch-object-storage.jpg">
-          <p><span style="font-style: italic;">Note: Stateful</span></p>
-        </section>
-
-        <section>
-          <h2>Create a Container</h2>
-          <pre><code data-trim class="bash">
-workon osc
-openstack container create $OS_USERNAME-watermark
-          </code></pre>
-        </section>
-
-        <section id="container-public-1">
-          <h2>Make a Container Public: Part 1</h2>
-          <pre><code data-trim class="bash">
-# Some long random string
-TEMP_URL_KEY=qksfd84iua4KN084oniur34aoungINUIU
-
-TOKEN=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
-  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", "password":"'"$OS_PASSWORD"'"}}}' \
-  -H "Content-type: application/json" | \
-  jq -r .access.token.id`
-
-SWIFT_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
-  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
-                                        "password":"'"$OS_PASSWORD"'"}}}' \
-  -H "Content-type: application/json" | \
-  jq -r '.access.serviceCatalog[] | select(.name == "cloudFiles").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
-
-curl -s -X POST $SWIFT_ENDPOINT \
-  -H "X-Auth-Token: $TOKEN" \
-  -H "X-Account-Meta-Temp-Url-Key: $TEMP_URL_KEY"
-
-curl -s -X POST $SWIFT_ENDPOINT/$OS_USERNAME-watermark \
-  -H "X-Auth-Token: $TOKEN" \
-  -H "X-Account-Meta-Temp-Url-Key: $TEMP_URL_KEY"
-
-echo "export WM_CONTAINER_URL=$SWIFT_ENDPOINT/$OS_USERNAME-watermark" >> $HOME/app_env.rc
-echo "export TEMP_URL_KEY=$TEMP_URL_KEY" >> $HOME/app_env.rc
-        </code></pre>
-        <p><span style="font-style: italic;">Note: For <a href="http://docs.openstack.org/kilo/config-reference/content/object-storage-form-post.html" target="_blank">Swift's FormPost</a></span></p>
-      </section>
-
-
-  <section id="container-public-2">
-    <h2>Make a Container Public: Part 2</h2>
-    <pre><code data-trim class="bash">
-CF_CDN_ENDPOINT=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
-  -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", \
-                                        "password":"'"$OS_PASSWORD"'"}}}' \
-  -H "Content-type: application/json" | \
-  jq -r '.access.serviceCatalog[] | select(.name == "cloudFilesCDN").endpoints[] | select(.region == "'"$OS_REGION_NAME"'").publicURL'`
-
-WM_CONTAINER_CDN_URL=`curl -s -i -X PUT $CF_CDN_ENDPOINT/$OS_USERNAME-watermark \
-  -H "X-Auth-Token: $TOKEN" \
-  -H "X-Cdn-Enabled: True" |\
-  grep X-Cdn-Uri | \
-  awk '{print $2}'`
-
-echo "export CF_CDN_ENDPOINT=$CF_CDN_ENDPOINT" >> $HOME/worker_env.rc
-echo "export WM_CONTAINER_CDN_URL=$WM_CONTAINER_CDN_URL" >> $HOME/worker_env.rc
-          </code></pre>
-          <p><span style="font-style: italic;">Note: Here you would use <a href="http://developer.openstack.org/api-ref-objectstorage-v1.html#updateContainerMeta" target="_blank">Swift's Container Read</a></span></p>
         </section>
 
 
@@ -851,13 +853,13 @@ echo "export WM_CONTAINER_CDN_URL=$WM_CONTAINER_CDN_URL" >> $HOME/worker_env.rc
         <section>
           <h2>Configure Worker Server Environment</h2>
           <pre><code data-trim class="bash">
-source $HOME/api_lb_ip.rc
-
-cat &lt;&lt;EOF &gt;&gt; $HOME/worker_env.rc
+cat &lt;&lt;EOF &gt; $HOME/worker_env.rc
 export WM_API_SCHEME=http
 export WM_API_ENDPOINT=$WM_API_LB_IP
-export WM_CONFIG_ENV=unix
+export WM_CONFIG_ENV=testing
 EOF
+
+more $HOME/worker_env.rc
           </code></pre>
         </section>
 
@@ -900,11 +902,13 @@ openstack server create \
           <pre><code data-trim class="bash">
 source $HOME/api_lb_ip.rc
 
-cat &lt;&lt;EOF &gt;&gt; $HOME/app_env.rc
+cat &lt;&lt;EOF &gt; $HOME/app_env.rc
 export WM_API_SCHEME=http
 export WM_API_ENDPOINT=$WM_API_LB_IP
-export WM_CONFIG_ENV=unix
+export WM_CONFIG_ENV=testing
 EOF
+
+more $HOME/app_env.rc
           </code></pre>
         </section>
 
@@ -918,6 +922,7 @@ openstack server create \
   --user-data $HOME/app-on-openstack/code/app/deploy.sh \
   --config-drive true \
   --file /root/app_env.rc=$HOME/app_env.rc \
+  --file /root/os_env.rc=$HOME/os_env.rc \
   $OS_USERNAME-app
 
 !!
@@ -928,13 +933,15 @@ openstack server create \
         <section>
           <h2>Capture App Server IPs</h2>
           <pre><code data-trim class="bash">
-cat &lt;&lt;EOF &gt;&gt; $HOME/app_ips.rc
+cat &lt;&lt;EOF &gt; $HOME/app_ips.rc
 export WM_IPS=(
 $(openstack server list --format json | \
   jq -r '.[] | select(.Name == "'"$OS_USERNAME-app"'").Networks' | \
   sed "s/.*private=\(.*\)/\1/")
 )
 EOF
+
+more $HOME/app_ips.rc
           </code></pre>
         </section>
 
@@ -960,7 +967,7 @@ openstack server create \
         <section>
           <h2>Test the API</h2>
           <pre><code data-trim class="bash">
-openstack server list
+openstack server list | grep $OS_USERNAME
 curl my.app.lb.server
           </code></pre>
           <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
@@ -971,15 +978,21 @@ curl my.app.lb.server
 
         <section id="run">
           <h1>Run</h1>
-          <p>Run the app and use it.</p>
+        </section>
+
+        <section>
+          <img class="stretch" src="img/watermark.png">
+        </section>
+
+        <section>
+          <h1>Upload</h1>
         </section>
 
 
 
 
-        <section id="deployment-revisit">
+        <section id="deployment-2">
           <h1>Deployment Revisited</h1>
-          <p>Revisit deployment and show a Heat template for what we just deployed with the CLI.</p>
         </section>
 
 

@@ -20,8 +20,6 @@ def get_images():
         error_out=False)
     images = pagination.items
 
-    logger.debug("Got images: %s" % images)
-
     prev = None
     if pagination.has_prev:
         prev = url_for('api.get_images', page=page-1, _external=True)

@@ -4,6 +4,7 @@ apt-get -y -qq update; apt-get -y -qq upgrade
 apt-get -y -qq install python-dev python-pip git nginx
 
 echo "source /root/app_env.rc" >> /root/.profile
+echo "source /root/os_env.rc" >> /root/.profile
 source /root/.profile
 
 git clone https://github.com/everett-toews/app-on-openstack.git /root/app-on-openstack
