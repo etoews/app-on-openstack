@@ -124,4 +124,8 @@ if __name__ == '__main__':
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    event_loop()
+    try:
+        event_loop()
+    except Exception as e:
+        logger.debug(e)
+
