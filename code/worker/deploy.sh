@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 apt-get -y -qq update; apt-get -y -qq upgrade
-apt-get -y -qq install python3-dev python-pip git
+apt-get -y -qq install python3-dev python-pip git imagemagick
 
 echo "source /root/os_env.rc" >> /root/.profile
 echo "source /root/worker_env.rc" >> /root/.profile

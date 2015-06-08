@@ -2,9 +2,9 @@ import json
 import logging
 import os
 import sys
+from subprocess import call
 
 import requests
-from PIL import Image, ImageDraw
 from openstack import exceptions
 from openstack.message.v1 import claim
 
@@ -13,8 +13,8 @@ from config import config as conf
 import connect
 
 logger = logging.getLogger(__name__)
-tmp_dir = '/tmp/worker/'
-tmp_dir_wm = '/tmp/worker/wm-'
+tmp_dir = '/tmp/unwatermarked/'
+tmp_dir_wm = '/tmp/watermarked/'
 
 def save_file_locally(conn, filename):
     download = conn.object_store.get_object(filename, config.NAME)
@@ -25,30 +25,36 @@ def save_file_locally(conn, filename):
 
 
 def watermark(filename):
-    # credit: https://gist.github.com/snay2/876425
-    main = Image.open(open(tmp_dir + filename, "rb"))
-    image = Image.new("RGBA", main.size)
-    waterdraw = ImageDraw.ImageDraw(image, "RGBA")
-    waterdraw.text((10, 10), "THANK YOU EVERYONE!")
-    watermask = image.convert("L").point(lambda x: min(x, 200))
-    image.putalpha(watermask)
-    main.paste(image, None, image)
+    composite = [
+        'composite',
+        '-dissolve 50%',
+        '-gravity south',
+        'watermark.png',
+        tmp_dir + filename,
+        tmp_dir_wm + filename
+    ]
 
-    with open(tmp_dir_wm + filename, "wb") as f:
-        main.save(f)
-        logger.debug("Watermarked image: %s" % os.path.abspath(f.name))
+    composite_cmd = " ".join(composite)
+
+    # TODO: don't use shell=True
+    call(composite_cmd, shell=True)
+
+    logger.debug(os.path.dirname(os.path.realpath(__file__)))
+    logger.debug("Watermarked image: %s" % composite_cmd)
 
 
 def save_file_remotely(conn, filename):
 
+    wm_filename = "wm-" + filename
+
     with open(tmp_dir_wm + filename, "rb") as f:
         conn.object_store.create_object(
-            data=f.read(), name="wm-" + filename, container=config.NAME)
+            data=f.read(), name=wm_filename, container=config.NAME)
 
     logger.debug('Saved file remotely: {region}/{container}/{filename}'.format(
         region=config.OS_REGION_NAME,
         container=config.NAME,
-        filename=filename
+        filename=wm_filename
     ))
 
 
@@ -102,6 +108,9 @@ if __name__ == '__main__':
 
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
+
+    if not os.path.exists(tmp_dir_wm):
+        os.makedirs(tmp_dir_wm)
 
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
