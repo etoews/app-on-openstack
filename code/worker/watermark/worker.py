@@ -111,7 +111,7 @@ if __name__ == '__main__':
     stdout.setFormatter(formatter)
     logger.addHandler(stdout)
 
-    file_handler = logging.FileHandler('wm_worker.log')
+    file_handler = logging.FileHandler('/root/wm_worker.log')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
