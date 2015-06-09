@@ -285,10 +285,10 @@
             <li>Backup</li>
             <li>Metrics</li>
             <li>Feeds</li>
-            <li><span style="color:red">Bare Metal</span></li>
-            <li><span style="color:red">DNS</span></li>
-            <li><span style="color:red">CDN</span></li>
-            <li><span style="color:red">Keep</span></li>
+            <li><span style="color:red">OnMetal (Ironic)</span></li>
+            <li><span style="color:red">Cloud DNS (Designate)</span></li>
+            <li><span style="color:red">Cloud CDN (Poppy)</span></li>
+            <li><span style="color:red">Cloud Keep (Barbican)</span></li>
           </ul>
         </section>
 
@@ -371,6 +371,10 @@
         </section>
 
         <section>
+          <img class="stretch" src="img/account-number.png">
+        </section>
+
+        <section>
           <h2>Login, Update, and Utils</h2>
           <pre><code data-trim class="bash">
 ssh root@my.deploy-server.ipv4.address
@@ -400,6 +404,7 @@ echo "source /usr/local/bin/virtualenvwrapper.sh" &gt;&gt; $HOME/.profile
 
 source $HOME/.profile
           </code></pre>
+          <p><span style="font-style: italic;">See: <a href="http://docs.python-guide.org/en/latest/dev/virtualenvs/" target="_blank">Virtual Environments</a></span></p>
         </section>
 
         <section>
@@ -812,6 +817,10 @@ more $HOME/api_ips.rc
         </section>
 
         <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/api/watermark/v1/images.py#L38-48" target="_blank">images.py</a></h2>
+        </section>
+
+        <section>
           <h2>Check any API Server</h2>
           <pre><code data-trim class="bash">
 ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.api.server.ip
@@ -926,6 +935,10 @@ openstack server create \
         </section>
 
         <section>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/worker/watermark/worker.py#L19-24" target="_blank">worker.py</a></h2>
+        </section>
+
+        <section>
           <h2>Check any Worker Server</h2>
           <pre><code data-trim class="bash">
 ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.worker.server.ip
@@ -994,6 +1007,21 @@ openstack server create \
         </section>
 
         <section>
+          <h2>Check any App Server</h2>
+          <pre><code data-trim class="bash">
+            ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.app.server.ip
+
+            tail -f /var/log/cloud-init-output.log
+            tail -f /var/log/syslog
+            more $HOME/app-on-openstack/code/app/wm_app.log
+
+            exit
+
+            curl any.app.server.ip
+          </code></pre>
+        </section>
+
+        <section>
           <h2>Capture App Server IPs</h2>
           <pre><code data-trim class="bash">
 cat &lt;&lt;EOF &gt; $HOME/app_ips.rc
@@ -1009,18 +1037,7 @@ more $HOME/app_ips.rc
         </section>
 
         <section>
-          <h2>Check any App Server</h2>
-          <pre><code data-trim class="bash">
-ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.app.server.ip
-
-tail -f /var/log/cloud-init-output.log
-tail -f /var/log/syslog
-more $HOME/app-on-openstack/code/app/wm_app.log
-
-exit
-
-curl any.app.server.ip
-          </code></pre>
+          <h2><a href="https://github.com/everett-toews/app-on-openstack/blob/gh-pages/code/app/watermark/views.py#L37-49" target="_blank">views.py</a></h2>
         </section>
 
         <section>
@@ -1092,6 +1109,7 @@ curl my.app.lb.server
 
         <section id="next">
           <h1>Next</h1>
+          <li><a href="http://www.meetup.com/OpenStack-New-York-Meetup/" target="_blank">OpenStack NY Meetup</a></li>
         </section>
 
         <section>
