@@ -55,6 +55,7 @@
                 </tr>
               </tbody>
             </table>
+            <h4><a href="http://rack.to/app-on-os">rack.to/app-on-os</a></h4>
           </center>
         </section>
 
@@ -656,6 +657,8 @@ openstack container create $OS_USERNAME-watermark
         <section id="container-public">
           <h2>Make a Container Public</h2>
           <pre><code data-trim class="bash">
+# Scroll to the bottom!
+
 TOKEN=`curl -s -X POST https://identity.api.rackspacecloud.com/v2.0/tokens \
   -d '{"auth": {"passwordCredentials": {"username":"'"$OS_USERNAME"'", "password":"'"$OS_PASSWORD"'"}}}' \
   -H "Content-type: application/json" | \
@@ -866,7 +869,7 @@ more $HOME/api_lb_ip.rc
           <pre><code data-trim class="bash">
 curl $WM_API_LB_IP
           </code></pre>
-          <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
+          <p><span style="font-style: italic;">Note: Try it in your browser (but be patient)</span></p>
         </section>
 
 
@@ -1050,7 +1053,7 @@ openstack server create \
 openstack server list | grep $OS_USERNAME
 curl my.app.lb.server
           </code></pre>
-          <p><span style="font-style: italic;">Note: Try it in your browser</span></p>
+          <p><span style="font-style: italic;">Note: Try it in your browser (but be patient)</span></p>
         </section>
 
 
