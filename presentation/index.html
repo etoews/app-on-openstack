@@ -427,9 +427,9 @@ source $HOME/.profile
 cat &lt;&lt;EOF &gt; $HOME/os_env.rc
 export OS_AUTH_URL=https://identity.api.rackspacecloud.com/v2.0/
 export OS_REGION_NAME=IAD
-export OS_USERNAME=my-username
+export OS_USERNAME=my-account-username
 export OS_PROJECT_NAME=my-account-number
-export OS_PASSWORD=my-password
+export OS_PASSWORD=my-account-password
 EOF
 
 echo "source $HOME/os_env.rc" >> $HOME/.profile
@@ -1008,15 +1008,15 @@ openstack server create \
         <section>
           <h2>Check any App Server</h2>
           <pre><code data-trim class="bash">
-            ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.app.server.ip
+ssh -i $HOME/.ssh/id_rsa.qcon_deploy root@any.app.server.ip
 
-            tail -f /var/log/cloud-init-output.log
-            tail -f /var/log/syslog
-            more $HOME/app-on-openstack/code/app/wm_app.log
+tail -f /var/log/cloud-init-output.log
+tail -f /var/log/syslog
+more $HOME/app-on-openstack/code/app/wm_app.log
 
-            exit
+exit
 
-            curl any.app.server.ip
+curl any.app.server.ip
           </code></pre>
         </section>
 
